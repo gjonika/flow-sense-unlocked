@@ -12,6 +12,9 @@ export interface ReadingEntry {
   cost: number;
   notes?: string | null;
   user_id: string | null;
+  // Add these properties for compatibility with the component
+  utility_type?: string;
+  supplier_name?: string;
 }
 
 interface UseRecentReadingsProps {
@@ -41,13 +44,27 @@ export function useRecentReadings({
         
         const { data, error } = await supabase
           .from('readings_utilities')
-          .select('id, date, supplier_id, reading_value, cost, notes, user_id')
+          .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type, unit)')
           .order(orderBy, { ascending: orderDirection === 'ascending' })
           .limit(limit);
           
         if (error) throw new Error(error.message);
         
-        setReadings(data || []);
+        // Transform the data to include the supplier information
+        const formattedReadings: ReadingEntry[] = data?.map(reading => ({
+          id: reading.id,
+          date: reading.date,
+          supplier_id: reading.supplier_id,
+          reading_value: reading.reading_value,
+          cost: reading.cost,
+          notes: reading.notes,
+          user_id: reading.user_id,
+          utility_type: reading.suppliers_utilities?.utility_type,
+          supplier_name: reading.suppliers_utilities?.name,
+          unit: reading.suppliers_utilities?.unit
+        })) || [];
+        
+        setReadings(formattedReadings);
       } catch (err) {
         console.error('Error fetching recent readings:', err);
         setError(err instanceof Error ? err : new Error('Unknown error occurred'));
@@ -66,13 +83,27 @@ export function useRecentReadings({
     try {
       const { data, error } = await supabase
         .from('readings_utilities')
-        .select('id, date, supplier_id, reading_value, cost, notes, user_id')
+        .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type, unit)')
         .order(orderBy, { ascending: orderDirection === 'ascending' })
         .limit(limit);
         
       if (error) throw new Error(error.message);
       
-      setReadings(data || []);
+      // Transform the data to include the supplier information
+      const formattedReadings: ReadingEntry[] = data?.map(reading => ({
+        id: reading.id,
+        date: reading.date,
+        supplier_id: reading.supplier_id,
+        reading_value: reading.reading_value,
+        cost: reading.cost,
+        notes: reading.notes,
+        user_id: reading.user_id,
+        utility_type: reading.suppliers_utilities?.utility_type,
+        supplier_name: reading.suppliers_utilities?.name,
+        unit: reading.suppliers_utilities?.unit
+      })) || [];
+      
+      setReadings(formattedReadings);
     } catch (err) {
       console.error('Error refetching recent readings:', err);
       setError(err instanceof Error ? err : new Error('Unknown error occurred'));

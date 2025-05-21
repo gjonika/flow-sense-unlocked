@@ -39,10 +39,11 @@ interface Supplier {
   id: string;
   name: string;
   utility_type: string;
-  unit: string | null;
+  unit?: string | null;
   is_meter_based: boolean;
   login_url?: string | null;
   category_id?: string | null;
+  input_type?: string;
 }
 
 const supplierSchema = z.object({

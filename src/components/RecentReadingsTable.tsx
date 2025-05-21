@@ -110,10 +110,10 @@ export function RecentReadingsTable({
         <TableBody>
           {readings.map((reading) => (
             <TableRow key={reading.id}>
-              <TableCell>{formatDate(new Date(reading.readingdate))}</TableCell>
-              <TableCell className="capitalize">{reading.utilitytype}</TableCell>
-              <TableCell>{reading.reading !== null ? `${reading.reading} ${reading.unit || ''}` : '-'}</TableCell>
-              <TableCell>${reading.amount.toFixed(2)}</TableCell>
+              <TableCell>{formatDate(new Date(reading.date))}</TableCell>
+              <TableCell className="capitalize">{reading.utility_type || '-'}</TableCell>
+              <TableCell>{reading.reading_value !== null ? `${reading.reading_value} ${reading.unit || ''}` : '-'}</TableCell>
+              <TableCell>${reading.cost.toFixed(2)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
