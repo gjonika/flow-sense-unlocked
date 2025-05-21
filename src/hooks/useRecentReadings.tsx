@@ -44,7 +44,7 @@ export function useRecentReadings({
         
         const { data, error } = await supabase
           .from('readings_utilities')
-          .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type, unit)')
+          .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type)')
           .order(orderBy, { ascending: orderDirection === 'ascending' })
           .limit(limit);
           
@@ -61,7 +61,7 @@ export function useRecentReadings({
           user_id: reading.user_id,
           utility_type: reading.suppliers_utilities?.utility_type,
           supplier_name: reading.suppliers_utilities?.name,
-          unit: reading.suppliers_utilities?.unit
+          unit: null // Since 'unit' doesn't exist in suppliers_utilities table, set to null
         })) || [];
         
         setReadings(formattedReadings);
@@ -83,7 +83,7 @@ export function useRecentReadings({
     try {
       const { data, error } = await supabase
         .from('readings_utilities')
-        .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type, unit)')
+        .select('id, date, supplier_id, reading_value, cost, notes, user_id, suppliers_utilities(name, utility_type)')
         .order(orderBy, { ascending: orderDirection === 'ascending' })
         .limit(limit);
         
@@ -100,7 +100,7 @@ export function useRecentReadings({
         user_id: reading.user_id,
         utility_type: reading.suppliers_utilities?.utility_type,
         supplier_name: reading.suppliers_utilities?.name,
-        unit: reading.suppliers_utilities?.unit
+        unit: null // Since 'unit' doesn't exist in suppliers_utilities table, set to null
       })) || [];
       
       setReadings(formattedReadings);
