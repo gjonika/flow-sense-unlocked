@@ -12,6 +12,7 @@ import { DateField } from "./DateField";
 import { CostField } from "./CostField";
 import { ReadingField } from "./ReadingField";
 import { NotesField } from "./NotesField";
+import { format } from "date-fns";
 
 export const ReadingForm = () => {
   const { toast } = useToast();
@@ -34,17 +35,15 @@ export const ReadingForm = () => {
     try {
       // Prepare data for Supabase
       const entryData = {
-        readingdate: values.date.toISOString(),
-        utilitytype: values.utilityType,
-        supplier: values.supplier,
-        reading: values.reading ? parseFloat(values.reading) : null,
-        unit: unit || null,
-        amount: parseFloat(values.cost),
+        date: format(values.date, "yyyy-MM-dd"),
+        supplier_id: values.supplier,
+        reading_value: values.reading ? parseFloat(values.reading) : null,
+        cost: parseFloat(values.cost),
         notes: values.notes || null
       };
       
       // Insert into Supabase
-      const { error } = await supabase.from('utility_entries').insert(entryData);
+      const { error } = await supabase.from('readings_utilities').insert(entryData);
       
       if (error) {
         throw error;

@@ -10,15 +10,15 @@ import { format } from "date-fns";
 
 type Reading = {
   id: string;
-  readingdate: Date | string;
-  utilitytype: string;
-  supplier: string;
-  reading?: string | number;
-  unit?: string;
-  amount: number;
-  notes?: string;
-  created_at: Date | string;
-  updated_at: Date | string;
+  date: string;
+  supplier_id: string;
+  supplier_name?: string;
+  utility_type?: string;
+  reading_value?: number | null;
+  unit?: string | null;
+  cost: number;
+  notes?: string | null;
+  created_at: string;
 };
 
 const History = () => {
@@ -41,22 +41,45 @@ const History = () => {
   const fetchReadings = async () => {
     setIsLoading(true);
     try {
+      // First fetch suppliers to get their names and types
+      const { data: suppliersData, error: suppliersError } = await supabase
+        .from('suppliers_utilities')
+        .select('id, name, utility_type');
+      
+      if (suppliersError) throw suppliersError;
+      
+      const supplierMap: Record<string, { name: string, utility_type: string }> = {};
+      suppliersData?.forEach(supplier => {
+        supplierMap[supplier.id] = {
+          name: supplier.name,
+          utility_type: supplier.utility_type
+        };
+      });
+      
+      // Then fetch readings
       const { data, error } = await supabase
-        .from('utility_entries')
+        .from('readings_utilities')
         .select('*')
-        .order('readingdate', { ascending: false });
+        .order('date', { ascending: false });
       
       if (error) throw error;
       
-      setReadings(data || []);
+      // Combine readings with supplier information
+      const enrichedReadings = data?.map(reading => ({
+        ...reading,
+        supplier_name: supplierMap[reading.supplier_id]?.name || 'Unknown',
+        utility_type: supplierMap[reading.supplier_id]?.utility_type || 'Unknown'
+      })) || [];
+      
+      setReadings(enrichedReadings);
       
       // Extract unique suppliers and types
       const uniqueSuppliers = new Set<string>();
       const uniqueTypes = new Set<string>();
       
-      data?.forEach(entry => {
-        uniqueSuppliers.add(entry.supplier);
-        uniqueTypes.add(entry.utilitytype);
+      enrichedReadings.forEach(entry => {
+        uniqueSuppliers.add(entry.supplier_name);
+        uniqueTypes.add(entry.utility_type);
       });
       
       setSuppliers(uniqueSuppliers);
@@ -96,25 +119,25 @@ const History = () => {
     // Search term filter
     const matchesSearch = 
       (reading.notes?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      reading.supplier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reading.utilitytype.toLowerCase().includes(searchTerm.toLowerCase());
+      reading.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      reading.utility_type.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Utility type filter
-    const matchesType = filterType === "all" || reading.utilitytype.toLowerCase() === filterType.toLowerCase();
+    const matchesType = filterType === "all" || reading.utility_type.toLowerCase() === filterType.toLowerCase();
     
     // Supplier filter
-    const matchesSupplier = filterSupplier === "all" || reading.supplier === filterSupplier;
+    const matchesSupplier = filterSupplier === "all" || reading.supplier_name === filterSupplier;
     
     // Date range filter
     let matchesDateRange = true;
-    const readingDate = new Date(reading.readingdate);
+    const readingDate = new Date(reading.date);
     if (filterDateFrom) matchesDateRange = matchesDateRange && readingDate >= filterDateFrom;
     if (filterDateTo) matchesDateRange = matchesDateRange && readingDate <= filterDateTo;
     
     // Price range filter
     let matchesPriceRange = true;
-    if (filterPriceRange.min) matchesPriceRange = matchesPriceRange && reading.amount >= parseFloat(filterPriceRange.min);
-    if (filterPriceRange.max) matchesPriceRange = matchesPriceRange && reading.amount <= parseFloat(filterPriceRange.max);
+    if (filterPriceRange.min) matchesPriceRange = matchesPriceRange && reading.cost >= parseFloat(filterPriceRange.min);
+    if (filterPriceRange.max) matchesPriceRange = matchesPriceRange && reading.cost <= parseFloat(filterPriceRange.max);
     
     return matchesSearch && matchesType && matchesSupplier && matchesDateRange && matchesPriceRange;
   });
@@ -143,7 +166,7 @@ const History = () => {
   const handleDeleteAll = async () => {
     try {
       const { error } = await supabase
-        .from('utility_entries')
+        .from('readings_utilities')
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all entries
       

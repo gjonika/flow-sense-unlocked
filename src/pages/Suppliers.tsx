@@ -38,22 +38,21 @@ import { Edit, Plus } from "lucide-react";
 interface Supplier {
   id: string;
   name: string;
-  utilitytype: string;
+  utility_type: string;
   unit: string | null;
-  requires_reading: boolean | null;
-  website_url?: string;
-  custom_id?: string;
-  additional_info?: string;
+  is_meter_based: boolean;
+  login_url?: string | null;
+  category_id?: string | null;
 }
 
 const supplierSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  utilitytype: z.string().min(1, "Utility type is required"),
+  utility_type: z.string().min(1, "Utility type is required"),
   unit: z.string().optional(),
-  requires_reading: z.boolean().default(false),
-  website_url: z.string().optional(),
-  custom_id: z.string().optional(),
-  additional_info: z.string().optional(),
+  is_meter_based: z.boolean().default(false),
+  login_url: z.string().optional(),
+  category_id: z.string().optional(),
+  input_type: z.string().default('cost'),
 });
 
 const Suppliers = () => {
@@ -67,12 +66,12 @@ const Suppliers = () => {
     resolver: zodResolver(supplierSchema),
     defaultValues: {
       name: "",
-      utilitytype: "",
+      utility_type: "",
       unit: "",
-      requires_reading: false,
-      website_url: "",
-      custom_id: "",
-      additional_info: "",
+      is_meter_based: false,
+      login_url: "",
+      category_id: "",
+      input_type: "cost",
     },
   });
 
@@ -81,7 +80,7 @@ const Suppliers = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('utility_suppliers')
+        .from('suppliers_utilities')
         .select('*');
       
       if (error) throw error;
@@ -109,23 +108,23 @@ const Suppliers = () => {
       setEditingSupplier(supplier);
       form.reset({
         name: supplier.name,
-        utilitytype: supplier.utilitytype,
+        utility_type: supplier.utility_type,
         unit: supplier.unit || "",
-        requires_reading: supplier.requires_reading || false,
-        website_url: supplier.website_url || "",
-        custom_id: supplier.custom_id || "",
-        additional_info: supplier.additional_info || "",
+        is_meter_based: supplier.is_meter_based,
+        login_url: supplier.login_url || "",
+        category_id: supplier.category_id || "",
+        input_type: "cost", // Default as it might not be available in the current model
       });
     } else {
       setEditingSupplier(null);
       form.reset({
         name: "",
-        utilitytype: "",
+        utility_type: "",
         unit: "",
-        requires_reading: false,
-        website_url: "",
-        custom_id: "",
-        additional_info: "",
+        is_meter_based: false,
+        login_url: "",
+        category_id: "",
+        input_type: "cost",
       });
     }
     setDialogOpen(true);
@@ -136,18 +135,18 @@ const Suppliers = () => {
     try {
       const supplierData = {
         name: values.name,
-        utilitytype: values.utilitytype,
+        utility_type: values.utility_type,
         unit: values.unit || null,
-        requires_reading: values.requires_reading,
-        website_url: values.website_url || null,
-        custom_id: values.custom_id || null,
-        additional_info: values.additional_info || null,
+        is_meter_based: values.is_meter_based,
+        login_url: values.login_url || null,
+        category_id: values.category_id || null,
+        input_type: values.input_type,
       };
 
       if (editingSupplier) {
         // Update existing supplier
         const { error } = await supabase
-          .from('utility_suppliers')
+          .from('suppliers_utilities')
           .update(supplierData)
           .eq('id', editingSupplier.id);
         
@@ -160,7 +159,7 @@ const Suppliers = () => {
       } else {
         // Create new supplier
         const { error } = await supabase
-          .from('utility_suppliers')
+          .from('suppliers_utilities')
           .insert([supplierData]);
         
         if (error) throw error;
@@ -210,20 +209,19 @@ const Suppliers = () => {
               <TableHead>Type</TableHead>
               <TableHead>Unit</TableHead>
               <TableHead>Requires Reading</TableHead>
-              <TableHead>Custom ID</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   Loading suppliers...
                 </TableCell>
               </TableRow>
             ) : suppliers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No suppliers found
                 </TableCell>
               </TableRow>
@@ -231,10 +229,9 @@ const Suppliers = () => {
               suppliers.map((supplier) => (
                 <TableRow key={supplier.id}>
                   <TableCell className="font-medium">{supplier.name}</TableCell>
-                  <TableCell className="capitalize">{supplier.utilitytype}</TableCell>
+                  <TableCell className="capitalize">{supplier.utility_type}</TableCell>
                   <TableCell>{supplier.unit || '-'}</TableCell>
-                  <TableCell>{supplier.requires_reading ? 'Yes' : 'No'}</TableCell>
-                  <TableCell>{supplier.custom_id || '-'}</TableCell>
+                  <TableCell>{supplier.is_meter_based ? 'Yes' : 'No'}</TableCell>
                   <TableCell>
                     <Button 
                       variant="ghost" 
@@ -279,7 +276,7 @@ const Suppliers = () => {
                 
                 <FormField
                   control={form.control}
-                  name="utilitytype"
+                  name="utility_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Type</FormLabel>
@@ -307,7 +304,7 @@ const Suppliers = () => {
 
                 <FormField
                   control={form.control}
-                  name="website_url"
+                  name="login_url"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Website URL</FormLabel>
@@ -321,21 +318,7 @@ const Suppliers = () => {
                 
                 <FormField
                   control={form.control}
-                  name="custom_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Custom ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Account or customer ID" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="requires_reading"
+                  name="is_meter_based"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-6">
                       <FormControl>
@@ -356,24 +339,6 @@ const Suppliers = () => {
                   )}
                 />
               </div>
-              
-              <FormField
-                control={form.control}
-                name="additional_info"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Additional Information</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Notes, account details, etc."
-                        className="min-h-[80px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <DialogFooter>
                 <Button 

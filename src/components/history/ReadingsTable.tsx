@@ -11,15 +11,15 @@ import {
 
 interface Reading {
   id: string;
-  readingdate: Date | string;
-  utilitytype: string;
-  supplier: string;
-  reading?: string | number;
-  unit?: string;
-  amount: number;
-  notes?: string;
-  created_at: Date | string;
-  updated_at: Date | string;
+  date: string;
+  supplier_id: string;
+  supplier_name?: string;
+  utility_type?: string;
+  reading_value?: number | null;
+  unit?: string | null;
+  cost: number;
+  notes?: string | null;
+  created_at: string;
 }
 
 interface ReadingsTableProps {
@@ -64,12 +64,12 @@ export const ReadingsTable = ({
             ) : (
               filteredReadings.map((reading) => (
                 <TableRow key={reading.id}>
-                  <TableCell>{formatDate(new Date(reading.readingdate))}</TableCell>
-                  <TableCell className="capitalize">{reading.utilitytype}</TableCell>
-                  <TableCell>{reading.supplier}</TableCell>
-                  <TableCell>{reading.reading || '-'}</TableCell>
+                  <TableCell>{formatDate(new Date(reading.date))}</TableCell>
+                  <TableCell className="capitalize">{reading.utility_type}</TableCell>
+                  <TableCell>{reading.supplier_name}</TableCell>
+                  <TableCell>{reading.reading_value || '-'}</TableCell>
                   <TableCell>{reading.unit || '-'}</TableCell>
-                  <TableCell>${reading.amount.toFixed(2)}</TableCell>
+                  <TableCell>${reading.cost.toFixed(2)}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {reading.notes || <span className="text-muted-foreground">-</span>}
                   </TableCell>

@@ -5,11 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export interface ReadingEntry {
   id: string;
-  readingdate: string;
-  utilitytype: string;
-  reading: number | null;
+  date: string;
+  supplier_id: string;
+  reading_value: number | null;
   unit: string | null;
-  amount: number;
+  cost: number;
+  notes?: string | null;
   user_id: string | null;
 }
 
@@ -21,7 +22,7 @@ interface UseRecentReadingsProps {
 
 export function useRecentReadings({
   limit = 5,
-  orderBy = 'readingdate',
+  orderBy = 'date',
   orderDirection = 'descending'
 }: UseRecentReadingsProps = {}) {
   const [readings, setReadings] = useState<ReadingEntry[]>([]);
@@ -39,8 +40,8 @@ export function useRecentReadings({
         setError(null);
         
         const { data, error } = await supabase
-          .from('utility_entries')
-          .select('id, readingdate, utilitytype, reading, unit, amount, user_id')
+          .from('readings_utilities')
+          .select('id, date, supplier_id, reading_value, cost, notes, user_id')
           .order(orderBy, { ascending: orderDirection === 'ascending' })
           .limit(limit);
           
@@ -64,8 +65,8 @@ export function useRecentReadings({
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('utility_entries')
-        .select('id, readingdate, utilitytype, reading, unit, amount, user_id')
+        .from('readings_utilities')
+        .select('id, date, supplier_id, reading_value, cost, notes, user_id')
         .order(orderBy, { ascending: orderDirection === 'ascending' })
         .limit(limit);
         

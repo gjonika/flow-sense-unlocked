@@ -89,15 +89,14 @@ export const useReadingForm = () => {
   const fetchLastReading = async (utilityType: string, supplier: string) => {
     try {
       const { data, error } = await supabase
-        .from('utility_entries')
-        .select('reading')
-        .eq('utilitytype', utilityType)
-        .eq('supplier', supplier)
-        .order('readingdate', { ascending: false })
+        .from('readings_utilities')
+        .select('reading_value')
+        .eq('supplier_id', supplier)
+        .order('date', { ascending: false })
         .limit(1);
       
-      if (!error && data && data.length > 0 && data[0].reading) {
-        setLastReading(data[0].reading);
+      if (!error && data && data.length > 0 && data[0].reading_value) {
+        setLastReading(data[0].reading_value);
       } else {
         setLastReading(null);
       }
