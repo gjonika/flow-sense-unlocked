@@ -41,6 +41,45 @@ export type Database = {
           },
         ]
       }
+      categories_utilities: {
+        Row: {
+          color: string
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      dashboard_projects: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          data: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_metadata: {
         Row: {
           created_at: string
@@ -158,6 +197,24 @@ export type Database = {
         }
         Relationships: []
       }
+      fake_projects: {
+        Row: {
+          data: Json
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          data: Json
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gmail_labels: {
         Row: {
           color: string | null
@@ -188,6 +245,39 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      items: {
+        Row: {
+          description: string | null
+          id: string
+          label: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          label?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          label?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          id: number
+        }
+        Insert: {
+          content?: string
+          id?: number
+        }
+        Update: {
+          content?: string
+          id?: number
         }
         Relationships: []
       }
@@ -387,6 +477,85 @@ export type Database = {
           },
         ]
       }
+      readings_utilities: {
+        Row: {
+          cost: number
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          reading_value: number | null
+          supplier_id: string
+          user_id: string | null
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          reading_value?: number | null
+          supplier_id: string
+          user_id?: string | null
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          reading_value?: number | null
+          supplier_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readings_utilities_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers_utilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers_utilities: {
+        Row: {
+          category_id: string | null
+          id: string
+          input_type: string
+          is_meter_based: boolean
+          login_url: string | null
+          name: string
+          utility_type: string
+        }
+        Insert: {
+          category_id?: string | null
+          id?: string
+          input_type?: string
+          is_meter_based?: boolean
+          login_url?: string | null
+          name: string
+          utility_type: string
+        }
+        Update: {
+          category_id?: string | null
+          id?: string
+          input_type?: string
+          is_meter_based?: boolean
+          login_url?: string | null
+          name?: string
+          utility_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_utilities_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories_utilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       telegram_connections: {
         Row: {
           chat_id: string
@@ -536,75 +705,87 @@ export type Database = {
       utility_entries: {
         Row: {
           amount: number
-          created_at: string
+          created_at: string | null
           id: string
           notes: string | null
           payment_date: string | null
-          payment_reference: string | null
-          reading: number | null
-          readingdate: string
-          supplier: string
-          unit: string | null
-          updated_at: string
-          user_id: string | null
-          utilitytype: string
+          previous_reading: number | null
+          reading_date: string | null
+          reading_value: number | null
+          supplier_id: string | null
+          usage: number | null
+          utility_supplier_id: string | null
         }
         Insert: {
           amount: number
-          created_at?: string
+          created_at?: string | null
           id?: string
           notes?: string | null
           payment_date?: string | null
-          payment_reference?: string | null
-          reading?: number | null
-          readingdate: string
-          supplier: string
-          unit?: string | null
-          updated_at?: string
-          user_id?: string | null
-          utilitytype: string
+          previous_reading?: number | null
+          reading_date?: string | null
+          reading_value?: number | null
+          supplier_id?: string | null
+          usage?: number | null
+          utility_supplier_id?: string | null
         }
         Update: {
           amount?: number
-          created_at?: string
+          created_at?: string | null
           id?: string
           notes?: string | null
           payment_date?: string | null
-          payment_reference?: string | null
-          reading?: number | null
-          readingdate?: string
-          supplier?: string
-          unit?: string | null
-          updated_at?: string
-          user_id?: string | null
-          utilitytype?: string
+          previous_reading?: number | null
+          reading_date?: string | null
+          reading_value?: number | null
+          supplier_id?: string | null
+          usage?: number | null
+          utility_supplier_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "utility_entries_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "utility_suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "utility_entries_utility_supplier_id_fkey"
+            columns: ["utility_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "utility_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       utility_suppliers: {
         Row: {
-          created_at: string
+          color: string | null
+          created_at: string | null
+          has_meter: boolean | null
           id: string
           name: string
-          requires_reading: boolean | null
           unit: string | null
-          utilitytype: string
+          utility_type: string
         }
         Insert: {
-          created_at?: string
+          color?: string | null
+          created_at?: string | null
+          has_meter?: boolean | null
           id?: string
           name: string
-          requires_reading?: boolean | null
           unit?: string | null
-          utilitytype: string
+          utility_type: string
         }
         Update: {
-          created_at?: string
+          color?: string | null
+          created_at?: string | null
+          has_meter?: boolean | null
           id?: string
           name?: string
-          requires_reading?: boolean | null
           unit?: string | null
-          utilitytype?: string
+          utility_type?: string
         }
         Relationships: []
       }
