@@ -48,7 +48,12 @@ export function useRecentReadings({
           .order(orderBy, { ascending: orderDirection === 'ascending' })
           .limit(limit);
           
-        if (error) throw new Error(error.message);
+        if (error) {
+          console.error("Supabase error fetching readings:", error);
+          throw new Error(error.message);
+        }
+        
+        console.log("Fetched readings data:", data);
         
         // Transform the data to include the supplier information
         const formattedReadings: ReadingEntry[] = data?.map(reading => ({
@@ -87,7 +92,10 @@ export function useRecentReadings({
         .order(orderBy, { ascending: orderDirection === 'ascending' })
         .limit(limit);
         
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("Supabase error refetching readings:", error);
+        throw new Error(error.message);
+      }
       
       // Transform the data to include the supplier information
       const formattedReadings: ReadingEntry[] = data?.map(reading => ({

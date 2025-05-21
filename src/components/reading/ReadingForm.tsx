@@ -3,7 +3,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useReadingForm } from "@/hooks/useReadingForm";
 import { UtilityTypeField } from "./UtilityTypeField";
@@ -33,6 +32,11 @@ export const ReadingForm = () => {
     setIsSubmitting(true);
     
     try {
+      // Ensure we have the supplier_id
+      if (!values.supplier) {
+        throw new Error("Supplier is required");
+      }
+      
       // Prepare data for Supabase
       const entryData = {
         date: format(values.date, "yyyy-MM-dd"),
@@ -42,12 +46,20 @@ export const ReadingForm = () => {
         notes: values.notes || null
       };
       
+      console.log("Submitting reading data:", entryData);
+      
       // Insert into Supabase
-      const { error } = await supabase.from('readings_utilities').insert(entryData);
+      const { data, error } = await supabase
+        .from('readings_utilities')
+        .insert(entryData)
+        .select();
       
       if (error) {
+        console.error("Supabase error:", error);
         throw error;
       }
+      
+      console.log("Successfully saved reading:", data);
       
       toast({
         title: t('success.reading'),
@@ -64,11 +76,11 @@ export const ReadingForm = () => {
         notes: "",
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving reading:', error);
       toast({
         title: t('error.load'),
-        description: String(error),
+        description: error.message || String(error),
         variant: "destructive",
       });
     } finally {
@@ -77,43 +89,40 @@ export const ReadingForm = () => {
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{t('addReading.formTitle')}</CardTitle>
-        <CardDescription>
-          {t('addReading.formDescription')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UtilityTypeField form={form} />
-              <SupplierField form={form} suppliers={suppliers} selectedType={selectedType} />
-            </div>
+    <div className="max-w-2xl mx-auto">
+      <h2 className="text-xl font-semibold mb-4">{t('addReading.formTitle')}</h2>
+      <p className="text-muted-foreground mb-6">
+        {t('addReading.formDescription')}
+      </p>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UtilityTypeField form={form} />
+            <SupplierField form={form} suppliers={suppliers} selectedType={selectedType} />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DateField form={form} />
-              <CostField form={form} />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DateField form={form} />
+            <CostField form={form} />
+          </div>
 
-            {(selectedType && form.watch("supplier")) && (
-              <ReadingField 
-                form={form} 
-                requiresReading={requiresReading}
-                lastReading={lastReading}
-                unit={unit}
-              />
-            )}
+          {(selectedType && form.watch("supplier")) && (
+            <ReadingField 
+              form={form} 
+              requiresReading={requiresReading}
+              lastReading={lastReading}
+              unit={unit}
+            />
+          )}
 
-            <NotesField form={form} />
+          <NotesField form={form} />
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? t('addReading.submitting') : t('addReading.submit')}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? t('addReading.submitting') : t('addReading.submit')}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 };

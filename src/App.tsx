@@ -18,6 +18,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
+import MonthlyReadings from "./pages/monthly"; // Import the MonthlyReadings page
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="add-reading" element={<AddReading />} />
+                  <Route path="monthly" element={<MonthlyReadings />} />
                   <Route path="add-monthly-readings" element={<AddMonthlyReadings />} />
                   <Route path="history" element={<History />} />
                   <Route path="analytics" element={<Analytics />} />
