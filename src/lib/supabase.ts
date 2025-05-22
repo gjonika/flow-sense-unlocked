@@ -40,26 +40,5 @@ export interface ProjectFilter {
   searchQuery?: string;
 }
 
-// Check if user is authenticated
-export const checkAuth = async () => {
-  const { data } = await supabase.auth.getSession();
-  return !!data.session;
-};
-
-// Sign in anonymously to ensure access
-export const signInAnonymously = async () => {
-  try {
-    const { error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.error('Anonymous sign in error:', error);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error('Failed to sign in anonymously:', err);
-    return false;
-  }
-};
-
 // Export the supabase client from integrations for backward compatibility
 export { supabase };

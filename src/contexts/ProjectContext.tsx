@@ -8,7 +8,6 @@ import {
   deleteProject,
   importProjectsFromCSV
 } from '@/services/projectService';
-import { toast } from 'sonner';
 
 interface ProjectContextType {
   projects: Project[];
@@ -66,9 +65,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setProjects(sortedData);
       setError(null);
     } catch (err) {
-      console.error("Error fetching projects:", err);
       setError(err as Error);
-      toast.error("Failed to load projects. Using cached data if available.");
     } finally {
       setLoading(false);
     }
@@ -79,64 +76,29 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [filters, sortBy]);
 
   const addProject = async (project: Omit<Project, 'id' | 'createdAt' | 'lastUpdated'>) => {
-    try {
-      const newProject = await createProject(project);
-      await refreshProjects();
-      toast.success("Project created successfully");
-      return newProject;
-    } catch (err) {
-      console.error("Error adding project:", err);
-      toast.error("Failed to create project. Will try again later.");
-      throw err;
-    }
+    const newProject = await createProject(project);
+    await refreshProjects();
+    return newProject;
   };
 
   const editProject = async (id: string, project: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
-    try {
-      const updatedProject = await updateProject(id, project);
-      
-      // Update local state for immediate UI update
-      setProjects(prev => prev.map(p => 
-        p.id === id ? { ...p, ...project, lastUpdated: new Date().toISOString() } : p
-      ));
-      
-      // Refresh full project list from database
-      await refreshProjects();
-      return updatedProject;
-    } catch (err) {
-      console.error("Error editing project:", err);
-      toast.error("Failed to update project. Will try again later.");
-      throw err;
-    }
+    const updatedProject = await updateProject(id, project);
+    await refreshProjects();
+    return updatedProject;
   };
 
   const removeProject = async (id: string) => {
-    try {
-      const success = await deleteProject(id);
-      if (success) {
-        // Update local state immediately for better UX
-        setProjects(prev => prev.filter(p => p.id !== id));
-        // Then refresh from database
-        await refreshProjects();
-      }
-      return success;
-    } catch (err) {
-      console.error("Error removing project:", err);
-      toast.error("Failed to delete project. Will try again later.");
-      throw err;
+    const success = await deleteProject(id);
+    if (success) {
+      await refreshProjects();
     }
+    return success;
   };
 
   const importProjects = async (csvData: string) => {
-    try {
-      const importedProjects = await importProjectsFromCSV(csvData);
-      await refreshProjects();
-      return importedProjects;
-    } catch (err) {
-      console.error("Error importing projects:", err);
-      toast.error("Failed to import projects. Please check your CSV format.");
-      throw err;
-    }
+    const importedProjects = await importProjectsFromCSV(csvData);
+    await refreshProjects();
+    return importedProjects;
   };
 
   const updateFilters = (newFilters: ProjectFilter) => {
