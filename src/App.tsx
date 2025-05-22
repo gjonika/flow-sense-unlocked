@@ -4,55 +4,41 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProjectProvider } from "@/contexts/ProjectContext";
 import Dashboard from "./pages/Dashboard";
-import AddReading from "./pages/AddReading";
-import AddMonthlyReadings from "./pages/AddMonthlyReadings";
-import History from "./pages/History";
-import Analytics from "./pages/Analytics";
-import Suppliers from "./pages/Suppliers";
-import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
-import { LanguageProvider } from "./contexts/LanguageContext";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import Auth from "./pages/Auth";
-import AuthCallback from "./pages/AuthCallback";
-import Profile from "./pages/Profile";
-import MonthlyReadings from "./pages/monthly"; // Import the MonthlyReadings page
 
-const queryClient = new QueryClient();
+// Set up React Query with some retry logic for network errors
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on network errors with our fallback system
+        if (error?.message?.includes('fetch') || failureCount > 2) {
+          return false;
+        }
+        return true;
+      },
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="add-reading" element={<AddReading />} />
-                  <Route path="monthly" element={<MonthlyReadings />} />
-                  <Route path="add-monthly-readings" element={<AddMonthlyReadings />} />
-                  <Route path="history" element={<History />} />
-                  <Route path="analytics" element={<Analytics />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="suppliers" element={<Suppliers />} />
-                </Route>
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <ProjectProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ProjectProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

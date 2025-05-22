@@ -1,58 +1,72 @@
 
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getYearOptions } from "@/lib/data-utils";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { PlusIcon, FileTextIcon, BarChart2, Sparkles } from 'lucide-react';
 
 interface DashboardHeaderProps {
-  hasReadings: boolean;
-  selectedYear: number;
-  setSelectedYear: (year: number) => void;
+  handleAddProject: () => void;
+  toggleAnalytics: () => void;
+  toggleAISupport: () => void;
+  showAnalytics: boolean;
+  showAISupport: boolean;
+  openImportDialog: () => void;
 }
 
-export function DashboardHeader({ hasReadings, selectedYear, setSelectedYear }: DashboardHeaderProps) {
-  const navigate = useNavigate();
-  const yearOptions = getYearOptions();
-
-  const handleAddReading = () => {
-    navigate("/add-reading");
-  };
-
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ 
+  handleAddProject, 
+  toggleAnalytics, 
+  showAnalytics, 
+  openImportDialog,
+  toggleAISupport,
+  showAISupport
+}) => {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Monitor your utility consumption and costs
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {hasReadings && (
-          <Select 
-            value={selectedYear.toString()} 
-            onValueChange={(value) => setSelectedYear(parseInt(value))}
+    <div className="sticky top-0 z-30 bg-background pt-4 pb-2 shadow-sm">
+      <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-olive-dark">Project Dashboard</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Track and manage your side projects</p>
+        </div>
+        
+        <div className="flex flex-wrap gap-3 justify-end">
+          <Button 
+            onClick={handleAddProject}
+            className="bg-olive hover:bg-olive-dark flex items-center gap-2 order-first"
           >
-            <SelectTrigger className="w-24">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {yearOptions.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <Button 
-          onClick={handleAddReading}
-          className="gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          <span>{hasReadings ? "Add New Reading" : "Add Reading"}</span>
-        </Button>
+            <PlusIcon className="h-4 w-4" />
+            <span>Add Project</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={toggleAnalytics}
+          >
+            <BarChart2 className="h-4 w-4" />
+            {showAnalytics ? 'Hide' : 'Show'} Insights
+          </Button>
+          
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={toggleAISupport}
+          >
+            <Sparkles className="h-4 w-4" />
+            {showAISupport ? 'Hide' : 'AI'} Support
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={openImportDialog}
+          >
+            <FileTextIcon className="h-4 w-4" />
+            <span>Import CSV</span>
+          </Button>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default DashboardHeader;

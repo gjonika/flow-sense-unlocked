@@ -26,7 +26,7 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'var(--theme-color, hsl(var(--primary)))',
+					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
@@ -53,12 +53,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				utility: {
-					electricity: 'var(--theme-color, #3b82f6)',
-					water: 'var(--theme-color, #0ea5e9)',
-					gas: 'var(--theme-color, #ef4444)',
-					internet: 'var(--theme-color, #8b5cf6)',
-				}
+				// Custom colors
+				ivory: '#FFFFF0',
+				'olive-light': '#A3B18A',
+				olive: '#588157',
+				'olive-dark': '#3A5A40',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -81,31 +80,11 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				'fade-in': {
-					from: { 
-						opacity: '0',
-						transform: 'translateY(10px)'
-					},
-					to: { 
-						opacity: '1',
-						transform: 'translateY(0)'
-					}
-				},
-				'pulse-light': {
-					'0%, 100%': {
-						opacity: '1'
-					},
-					'50%': {
-						opacity: '0.7'
-					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.3s ease-out',
-				'pulse-light': 'pulse-light 2s ease-in-out infinite'
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},
