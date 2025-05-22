@@ -1,8 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectFilter, ActivityLog } from '@/lib/supabase';
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
+import { Json } from '@/integrations/supabase/types';
 
 // Local storage keys (for fallback only)
 const LOCAL_PROJECTS_KEY = 'local_projects';
@@ -43,7 +43,7 @@ function mapToSupabaseProject(project: Omit<Project, 'id' | 'createdAt' | 'lastU
     githuburl: project.githubUrl,
     websiteurl: project.websiteUrl,
     nextaction: project.nextAction,
-    activitylogs: project.activityLogs || [],
+    activitylogs: project.activityLogs as unknown as Json,
   };
 }
 
@@ -124,7 +124,7 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
     
     const newProjectData = {
       ...mapToSupabaseProject(project),
-      activitylogs: project.activityLogs || initialActivity,
+      activitylogs: project.activityLogs || initialActivity as unknown as Json,
       lastupdated: now,
       createdat: now,
     };
@@ -132,7 +132,7 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
     // Save to Supabase
     const { data, error } = await supabase
       .from('projects_dashboard')
-      .insert([newProjectData])
+      .insert(newProjectData)
       .select();
 
     if (error) {
@@ -182,7 +182,7 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
 
     // Handle activity logs separately if present
     if (project.activityLogs) {
-      updates.activitylogs = project.activityLogs;
+      updates.activitylogs = project.activityLogs as unknown as Json;
     }
 
     // Update in Supabase
@@ -310,7 +310,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
         nextaction: project.nextAction || '',
         lastupdated: now,
         createdat: now,
-        activitylogs: [{ text: "Project imported from CSV", date: now }]
+        activitylogs: [{ text: "Project imported from CSV", date: now }] as unknown as Json
       };
     });
 
