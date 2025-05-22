@@ -1,67 +1,92 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, FileTextIcon, BarChart2, Sparkles } from 'lucide-react';
+import { 
+  PlusCircle, 
+  BarChart, 
+  FileSpreadsheet, 
+  BrainCircuit,
+  Lightbulb
+} from 'lucide-react';
 
 interface DashboardHeaderProps {
   handleAddProject: () => void;
   toggleAnalytics: () => void;
   toggleAISupport: () => void;
+  toggleAIInsights: () => void;
   showAnalytics: boolean;
   showAISupport: boolean;
+  showAIInsights: boolean;
   openImportDialog: () => void;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ 
-  handleAddProject, 
-  toggleAnalytics, 
-  showAnalytics, 
-  openImportDialog,
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({
+  handleAddProject,
+  toggleAnalytics,
   toggleAISupport,
-  showAISupport
+  toggleAIInsights,
+  showAnalytics,
+  showAISupport,
+  showAIInsights,
+  openImportDialog,
 }) => {
   return (
-    <div className="sticky top-0 z-30 bg-background pt-4 pb-2 shadow-sm">
-      <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center justify-between mb-6">
+    <div className="mb-6">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-olive-dark">Project Dashboard</h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">Track and manage your side projects</p>
+          <p className="text-muted-foreground mt-1">Track and manage your side projects</p>
         </div>
         
-        <div className="flex flex-wrap gap-3 justify-end">
+        <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
           <Button 
+            variant="default" 
+            className="bg-olive hover:bg-olive-dark flex items-center gap-1"
             onClick={handleAddProject}
-            className="bg-olive hover:bg-olive-dark flex items-center gap-2 order-first"
           >
-            <PlusIcon className="h-4 w-4" />
-            <span>Add Project</span>
+            <PlusCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Project</span>
+            <span className="sm:hidden">Add</span>
           </Button>
           
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
+          <Button 
+            variant={showAnalytics ? "secondary" : "outline"} 
+            className="flex items-center gap-1"
             onClick={toggleAnalytics}
           >
-            <BarChart2 className="h-4 w-4" />
-            {showAnalytics ? 'Hide' : 'Show'} Insights
-          </Button>
-          
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={toggleAISupport}
-          >
-            <Sparkles className="h-4 w-4" />
-            {showAISupport ? 'Hide' : 'AI'} Support
+            <BarChart className="h-4 w-4" />
+            <span className="hidden sm:inline">Show Insights</span>
+            <span className="sm:hidden">Insights</span>
           </Button>
           
           <Button 
-            variant="outline"
-            className="flex items-center gap-2"
+            variant={showAISupport ? "secondary" : "outline"} 
+            className="flex items-center gap-1"
+            onClick={toggleAISupport}
+          >
+            <BrainCircuit className="h-4 w-4" />
+            <span className="hidden sm:inline">AI Support</span>
+            <span className="sm:hidden">AI</span>
+          </Button>
+
+          <Button 
+            variant={showAIInsights ? "secondary" : "outline"} 
+            className="flex items-center gap-1"
+            onClick={toggleAIInsights}
+          >
+            <Lightbulb className="h-4 w-4" />
+            <span className="hidden sm:inline">AI Insights</span>
+            <span className="sm:hidden">Insights</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-1"
             onClick={openImportDialog}
           >
-            <FileTextIcon className="h-4 w-4" />
-            <span>Import CSV</span>
+            <FileSpreadsheet className="h-4 w-4" />
+            <span className="hidden sm:inline">Import CSV</span>
+            <span className="sm:hidden">Import</span>
           </Button>
         </div>
       </div>

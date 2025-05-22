@@ -5,9 +5,6 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import { Json } from '@/integrations/supabase/types';
 
-// Local storage keys (for fallback only)
-const LOCAL_PROJECTS_KEY = 'local_projects';
-
 // Map Supabase column names to our Project interface
 function mapSupabaseProject(data: any): Project {
   return {
@@ -48,27 +45,7 @@ function mapToSupabaseProject(project: Omit<Project, 'id' | 'createdAt' | 'lastU
   };
 }
 
-// Get local projects (used as fallback)
-const getLocalProjects = (): Project[] => {
-  try {
-    const stored = localStorage.getItem(LOCAL_PROJECTS_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error('Error reading from localStorage:', error);
-    return [];
-  }
-};
-
-// Save projects to local storage
-const saveLocalProjects = (projects: Project[]) => {
-  try {
-    localStorage.setItem(LOCAL_PROJECTS_KEY, JSON.stringify(projects));
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-};
-
-// Fetch projects from Supabase or fallback to local storage
+// Fetch projects from Supabase
 export const fetchProjects = async (filters?: ProjectFilter) => {
   try {
     // Use Supabase
@@ -107,10 +84,10 @@ export const fetchProjects = async (filters?: ProjectFilter) => {
     
   } catch (error) {
     console.error('Error fetching projects from Supabase:', error);
-    toast.error('Failed to fetch projects from database, using local data instead');
+    toast.error('Failed to fetch projects from database');
     
-    // Fall back to local storage if Supabase fetch fails
-    return getLocalProjects();
+    // Return empty array instead of local storage fallback
+    return [];
   }
 };
 
@@ -126,12 +103,12 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
     // Prepare the project data for Supabase
     const newProjectData = {
       ...mapToSupabaseProject(project),
-      activitylogs: (project.activityLogs || initialActivity) as unknown as Json,
+      activitylogs: project.activityLogs || initialActivity as unknown as Json,
       lastupdated: now,
       createdat: now,
     };
 
-    // Save to Supabase using the correct table name 'projects'
+    // Save to Supabase
     const { data, error } = await supabase
       .from('projects')
       .insert(newProjectData)
@@ -149,28 +126,8 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
     return mapSupabaseProject(data[0]);
   } catch (error) {
     console.error('Error creating project in Supabase:', error);
-    toast.error('Failed to save to database, storing locally instead');
-    
-    // Fallback to local storage
-    const now = new Date().toISOString();
-    const initialActivity = [{
-      text: "Initial project setup completed",
-      date: now
-    }];
-    
-    const newProject = {
-      ...project,
-      activityLogs: project.activityLogs || initialActivity,
-      id: uuidv4(),
-      createdAt: now,
-      lastUpdated: now,
-    } as Project;
-    
-    const projects = getLocalProjects();
-    projects.push(newProject);
-    saveLocalProjects(projects);
-    
-    return newProject;
+    toast.error('Failed to save project to database');
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 
@@ -187,7 +144,7 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
       updates.activitylogs = project.activityLogs as unknown as Json;
     }
 
-    // Update in Supabase using the correct table name 'projects'
+    // Update in Supabase
     const { data, error } = await supabase
       .from('projects')
       .update(updates)
@@ -206,34 +163,15 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
     return mapSupabaseProject(data[0]);
   } catch (error) {
     console.error('Error updating project in Supabase:', error);
-    toast.error('Failed to update in database, updating locally instead');
-    
-    // Fallback to local storage
-    const projects = getLocalProjects();
-    const index = projects.findIndex(p => p.id === id);
-    
-    if (index !== -1) {
-      const updatedProject = {
-        ...projects[index],
-        ...project,
-        lastUpdated: new Date().toISOString()
-      };
-      
-      projects[index] = updatedProject;
-      saveLocalProjects(projects);
-      
-      return updatedProject;
-    } else {
-      toast.error('Project not found');
-      throw new Error('Project not found');
-    }
+    toast.error('Failed to update project in database');
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 
 // Delete a project
 export const deleteProject = async (id: string) => {
   try {
-    // Delete from Supabase using the correct table name 'projects'
+    // Delete from Supabase
     const { error } = await supabase
       .from('projects')
       .delete()
@@ -247,19 +185,8 @@ export const deleteProject = async (id: string) => {
     return true;
   } catch (error) {
     console.error('Error deleting project from Supabase:', error);
-    
-    // Fallback to local storage
-    const projects = getLocalProjects();
-    const filtered = projects.filter(p => p.id !== id);
-    
-    if (filtered.length < projects.length) {
-      saveLocalProjects(filtered);
-      toast.success('Project deleted successfully (removed locally)');
-      return true;
-    } else {
-      toast.error('Failed to delete project');
-      return false;
-    }
+    toast.error('Failed to delete project');
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 
@@ -324,7 +251,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
       return [];
     }
 
-    // Insert into Supabase using the correct table name 'projects'
+    // Insert into Supabase
     const { data, error } = await supabase
       .from('projects')
       .insert(validProjects)
@@ -338,60 +265,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
     return (data as any[]).map(mapSupabaseProject);
   } catch (error) {
     console.error('Error importing projects to Supabase:', error);
-    toast.error('Failed to import to database, storing locally instead');
-    
-    try {
-      // Fallback to local storage
-      // Parse CSV and add to local storage
-      const rows = csvData.trim().split('\n');
-      const headers = rows[0].split(',');
-      
-      const projects = rows.slice(1).map((row) => {
-        const values = row.split(',');
-        const project: any = {};
-        
-        headers.forEach((header, index) => {
-          const value = values[index]?.trim();
-          
-          if (header === 'tags') {
-            project[header] = value ? value.split(';').map((tag: string) => tag.trim()) : [];
-          } else if (header === 'isMonetized') {
-            project[header] = value === 'true';
-          } else if (header === 'usefulness' || header === 'progress') {
-            project[header] = value ? parseInt(value, 10) : 0;
-          } else {
-            project[header] = value || '';
-          }
-        });
-
-        const now = new Date().toISOString();
-        project.id = project.id || uuidv4();
-        project.createdAt = project.createdAt || now;
-        project.lastUpdated = now;
-        project.activityLogs = [{ text: "Project imported from CSV", date: now }];
-
-        return project as Project;
-      });
-      
-      // Filter out any projects with missing required fields
-      const validProjects = projects.filter(p => p.name && p.name.trim() !== '');
-      
-      if (validProjects.length === 0) {
-        toast.error('No valid projects found in CSV data');
-        return [];
-      }
-      
-      const existingProjects = getLocalProjects();
-      const allProjects = [...existingProjects, ...validProjects];
-      
-      saveLocalProjects(allProjects);
-      toast.success(`Imported ${validProjects.length} projects successfully (stored locally)`);
-      
-      return validProjects;
-    } catch (csvError) {
-      console.error('Error parsing CSV:', csvError);
-      toast.error('Failed to parse CSV file');
-      throw csvError;
-    }
+    toast.error('Failed to import projects to database');
+    throw error; // Re-throw the error to be handled by the caller
   }
 };

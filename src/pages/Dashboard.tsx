@@ -6,6 +6,7 @@ import ProjectForm from '@/components/ProjectForm';
 import ImportCSVDialog from '@/components/ImportCSVDialog';
 import ProjectAnalytics from '@/components/ProjectAnalytics';
 import AISupport from '@/components/AISupport';
+import AIInsights from '@/components/AIInsights';
 import { Project } from '@/lib/supabase';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -19,6 +20,7 @@ const Dashboard: React.FC = () => {
   const [editingProject, setEditingProject] = useState<Project | undefined>(undefined);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showAISupport, setShowAISupport] = useState(false);
+  const [showAIInsights, setShowAIInsights] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const isMobile = useIsMobile();
 
@@ -61,12 +63,26 @@ const Dashboard: React.FC = () => {
 
   const toggleAnalytics = () => {
     setShowAnalytics(!showAnalytics);
-    if (!showAnalytics) setShowAISupport(false);
+    if (!showAnalytics) {
+      setShowAISupport(false);
+      setShowAIInsights(false);
+    }
   };
 
   const toggleAISupport = () => {
     setShowAISupport(!showAISupport);
-    if (!showAISupport) setShowAnalytics(false);
+    if (!showAISupport) {
+      setShowAnalytics(false);
+      setShowAIInsights(false);
+    }
+  };
+
+  const toggleAIInsights = () => {
+    setShowAIInsights(!showAIInsights);
+    if (!showAIInsights) {
+      setShowAnalytics(false);
+      setShowAISupport(false);
+    }
   };
 
   const toggleViewMode = () => {
@@ -81,6 +97,8 @@ const Dashboard: React.FC = () => {
         toggleAISupport={toggleAISupport}
         showAnalytics={showAnalytics}
         showAISupport={showAISupport}
+        showAIInsights={showAIInsights}
+        toggleAIInsights={toggleAIInsights}
         openImportDialog={() => setIsImportDialogOpen(true)}
       />
       
@@ -93,6 +111,12 @@ const Dashboard: React.FC = () => {
       {showAISupport && (
         <div className="mb-6">
           <AISupport projects={projects} />
+        </div>
+      )}
+
+      {showAIInsights && (
+        <div className="mb-6">
+          <AIInsights projects={projects} />
         </div>
       )}
       

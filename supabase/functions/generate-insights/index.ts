@@ -1,136 +1,101 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-interface ProjectData {
-  name: string;
-  progress: number;
-  status: string;
-  type: string;
-  usefulness: number;
-  tags: string[];
-  nextAction?: string;
-  activityLog?: string[];
-}
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-interface RequestData {
-  projects: ProjectData[];
-}
-
-interface AIResponse {
-  summary: string;
-  suggestions: string;
-  trends: string;
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
-    // Parse request data
-    const requestData: RequestData = await req.json();
-    const { projects } = requestData;
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables');
+    }
+
+    const { projects } = await req.json();
     
     if (!projects || !Array.isArray(projects) || projects.length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          summary: "No projects found for analysis.",
-          suggestions: "Add projects to get personalized suggestions.",
-          trends: "Project trends will appear here once you add more projects."
-        }),
-        { 
-          headers: { "Content-Type": "application/json" },
-          status: 200 
-        }
-      );
+      throw new Error('No valid projects provided');
     }
-    
-    // Generate basic insights without AI for reliability
-    const projectCount = projects.length;
-    
-    // Count projects by status
-    const statusCounts: Record<string, number> = {};
-    projects.forEach(project => {
-      statusCounts[project.status] = (statusCounts[project.status] || 0) + 1;
-    });
-    
-    // Count projects by type
-    const typeCounts: Record<string, number> = {};
-    projects.forEach(project => {
-      typeCounts[project.type] = (typeCounts[project.type] || 0) + 1;
-    });
-    
-    // Calculate average usefulness and progress
-    const avgUsefulness = projects.reduce((sum, p) => sum + p.usefulness, 0) / projectCount;
-    const avgProgress = projects.reduce((sum, p) => sum + p.progress, 0) / projectCount;
-    
-    // Find the most common tags
-    const tagCounts: Record<string, number> = {};
-    projects.forEach(project => {
-      if (project.tags) {
-        project.tags.forEach(tag => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-      }
-    });
-    
-    const sortedTags = Object.entries(tagCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(entry => entry[0]);
-    
-    // Create insights
-    const response: AIResponse = {
-      summary: `You have ${projectCount} projects tracked. ${
-        statusCounts["Completed"] || 0
-      } projects are completed, ${
-        statusCounts["In Progress"] || 0
-      } are in progress. The average project usefulness rating is ${avgUsefulness.toFixed(1)}/5 and average progress is at ${avgProgress.toFixed(0)}%.`,
-      
-      suggestions: `Focus on your highest usefulness projects first to maximize impact. ${
-        avgProgress < 50 
-          ? "Many of your projects are in early stages - consider prioritizing 2-3 to advance." 
-          : "Several projects are well underway - consider setting completion dates for motivation."
-      }${
-        sortedTags.length > 0 
-          ? ` Your most common project tags are ${sortedTags.join(", ")}.` 
-          : ""
-      }`,
-      
-      trends: `${
-        projectCount > 5 
-          ? "You're managing a diverse portfolio of projects." 
-          : "You're focused on a smaller set of projects."
-      } ${
-        avgProgress > 70 
-          ? "You're making excellent progress across your projects." 
-          : avgProgress > 40 
-            ? "Your projects are advancing at a moderate pace." 
-            : "Many projects are in early stages of development."
-      }${
-        Object.keys(typeCounts).length > 1 
-          ? ` Your project types are diverse across ${Object.keys(typeCounts).join(", ")}.` 
-          : ""
-      }`
-    };
-    
-    return new Response(
-      JSON.stringify(response),
-      { 
-        headers: { "Content-Type": "application/json" },
-        status: 200 
-      }
-    );
-    
-  } catch (error) {
-    console.error("Error generating insights:", error);
-    
-    return new Response(
-      JSON.stringify({ 
-        error: "Failed to generate insights",
-        message: error instanceof Error ? error.message : "Unknown error" 
+
+    // Create prompt for Gemini API
+    const prompt = `
+    You are an AI assistant for a project dashboard. Given the following projects with progress, tags, and activity logs, provide:
+
+    1. A brief summary of each project's state.
+    2. Suggested next actions or improvements.
+    3. Any trends or insights across projects.
+
+    Data:
+    ${JSON.stringify(projects, null, 2)}
+
+    Format your response with three separate sections:
+    - SUMMARY: (project summary information)
+    - SUGGESTIONS: (actionable suggestions for projects)
+    - TRENDS: (cross-project insights and patterns)
+
+    Keep each section concise and focused on actionable insights.
+    `;
+
+    // Call Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 2048,
+        }
       }),
-      { 
-        headers: { "Content-Type": "application/json" },
-        status: 500 
-      }
-    );
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract the text from Gemini's response
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    // Parse the sections from the text
+    const summaryMatch = text.match(/SUMMARY:([\s\S]*?)(?=SUGGESTIONS:|$)/i);
+    const suggestionsMatch = text.match(/SUGGESTIONS:([\s\S]*?)(?=TRENDS:|$)/i);
+    const trendsMatch = text.match(/TRENDS:([\s\S]*?)$/i);
+    
+    const result = {
+      summary: summaryMatch ? summaryMatch[1].trim() : 'No summary generated',
+      suggestions: suggestionsMatch ? suggestionsMatch[1].trim() : 'No suggestions generated',
+      trends: trendsMatch ? trendsMatch[1].trim() : 'No trends generated',
+    };
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error in generate-insights function:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
