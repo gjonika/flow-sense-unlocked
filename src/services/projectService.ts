@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Project, ProjectFilter, ActivityLog } from '@/lib/supabase';
 import { toast } from "sonner";
@@ -124,12 +125,12 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
     
     const newProjectData = {
       ...mapToSupabaseProject(project),
-      activitylogs: project.activityLogs || initialActivity as unknown as Json,
+      activitylogs: (project.activityLogs || initialActivity) as unknown as Json,
       lastupdated: now,
       createdat: now,
     };
 
-    // Save to Supabase
+    // Save to Supabase - fix: send as a single object, not wrapped in an array
     const { data, error } = await supabase
       .from('projects_dashboard')
       .insert(newProjectData)
@@ -322,7 +323,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
       return [];
     }
 
-    // Insert into Supabase
+    // Insert into Supabase - validProjects is already an array, so pass it directly
     const { data, error } = await supabase
       .from('projects_dashboard')
       .insert(validProjects)
