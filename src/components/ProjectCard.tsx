@@ -8,6 +8,7 @@ import { TrashIcon, EditIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon, LinkIcon
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useProjects } from '@/contexts/ProjectContext';
+import { toast } from 'sonner';
 
 interface ProjectCardProps {
   project: Project;
@@ -70,9 +71,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) 
         date: newDate
       };
       
+      // Update local state immediately for better UX
       const updatedLogs = [newEntry, ...activityLogs];
-      
-      // Update local state
       setActivityLogs(updatedLogs);
       setActivityText('');
       
@@ -81,8 +81,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) 
         await editProject(project.id, {
           activityLogs: updatedLogs
         });
+        toast.success("Activity added successfully");
       } catch (error) {
         console.error('Failed to save activity log:', error);
+        toast.error('Failed to save to database, storing locally instead');
+        
+        // Still keep local state updated even if server update fails
+        // Local state was already updated above
       }
     }
   };

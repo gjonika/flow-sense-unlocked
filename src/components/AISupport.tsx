@@ -21,8 +21,38 @@ const AISupport: React.FC<AISupportProps> = ({ projects }) => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<AIResponse | null>(null);
 
+  // Function to generate placeholder response when API fails
+  const generatePlaceholderResponse = (): AIResponse => {
+    const projectCount = projects.length;
+    let progressCount = 0;
+    let completedCount = 0;
+    let ideasCount = 0;
+    
+    projects.forEach(project => {
+      if (project.progress >= 100) completedCount++;
+      if (project.progress > 0) progressCount++;
+      if (project.status === 'Idea') ideasCount++;
+    });
+    
+    return {
+      summary: `You have ${projectCount} projects tracked in your dashboard. ${completedCount} projects are completed, ${progressCount} are in progress, and ${ideasCount} are in the idea phase.`,
+      suggestions: `Consider focusing on projects with high usefulness ratings first. For each project, make sure to add regular activity updates to track your progress more effectively.`,
+      trends: `Your portfolio seems to be ${projectCount > 3 ? 'diverse' : 'focused on a few key projects'}. Keep adding detailed information to each project to get more personalized insights.`
+    };
+  };
+
   const generateInsights = async () => {
     setLoading(true);
+
+    if (projects.length === 0) {
+      setResponse({
+        summary: "You don't have any projects yet. Add your first project to get insights.",
+        suggestions: "Start by creating a new project and tracking its progress.",
+        trends: "Once you have multiple projects, you'll see trends and patterns here."
+      });
+      setLoading(false);
+      return;
+    }
 
     // Prepare data for the API
     const projectData = projects.map(project => {
@@ -44,14 +74,22 @@ const AISupport: React.FC<AISupportProps> = ({ projects }) => {
     });
 
     try {
+      // Use a timeout to ensure we don't wait too long for the API
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out')), 10000)
+      );
+      
       // Call the edge function
-      const response = await fetch('/api/generate-insights', {
+      const responsePromise = fetch('/api/generate-insights', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ projects: projectData }),
       });
+      
+      // Race the fetch against a timeout
+      const response = await Promise.race([responsePromise, timeoutPromise]) as Response;
 
       if (!response.ok) {
         throw new Error('Failed to generate insights');
@@ -61,14 +99,10 @@ const AISupport: React.FC<AISupportProps> = ({ projects }) => {
       setResponse(data);
     } catch (error) {
       console.error('Error generating insights:', error);
-      toast.error('Failed to generate insights. Please try again later.');
+      toast.error('Failed to generate insights. Using local analysis instead.');
       
-      // Create a placeholder response for testing
-      setResponse({
-        summary: "Could not generate project summary. Please try again later.",
-        suggestions: "Could not generate suggestions. Please try again later.",
-        trends: "Could not analyze trends. Please try again later."
-      });
+      // Create a placeholder response when the API fails
+      setResponse(generatePlaceholderResponse());
     } finally {
       setLoading(false);
     }

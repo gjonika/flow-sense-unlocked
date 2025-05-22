@@ -10,22 +10,22 @@ const LOCAL_PROJECTS_KEY = 'local_projects';
 // Map Supabase column names to our Project interface
 function mapSupabaseProject(data: any): Project {
   return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    type: data.type,
-    status: data.status,
-    usefulness: data.usefulness,
+    id: data.id || '',
+    name: data.name || '',
+    description: data.description || '',
+    type: data.type || 'Personal',
+    status: data.status || 'Idea',
+    usefulness: data.usefulness || 3,
     isMonetized: data.ismonetized || false,
     progress: data.progress || 0,
     tags: data.tags || [],
-    githubUrl: data.githuburl,
-    websiteUrl: data.websiteurl,
-    nextAction: data.nextaction,
+    githubUrl: data.githuburl || '',
+    websiteUrl: data.websiteurl || '',
+    nextAction: data.nextaction || '',
     activityLogs: data.activitylogs || [],
     lastUpdated: data.lastupdated || data.lastUpdated || new Date().toISOString(),
     createdAt: data.createdat || data.createdAt || new Date().toISOString(),
-    user_id: data.user_id,
+    user_id: data.user_id || '',
   };
 }
 
@@ -43,17 +43,11 @@ function mapToSupabaseProject(project: Omit<Project, 'id' | 'createdAt' | 'lastU
     githuburl: project.githubUrl,
     websiteurl: project.websiteUrl,
     nextaction: project.nextAction,
-    // Don't include activityLogs here as it's handled separately
+    activitylogs: project.activityLogs || [],
   };
 }
 
-// Check if Supabase is properly connected
-const isSupabaseConnected = () => {
-  // We can now assume Supabase is connected since the table was created
-  return true;
-};
-
-// Local storage fallback functions (only used if Supabase fails)
+// Get local projects (used as fallback)
 const getLocalProjects = (): Project[] => {
   try {
     const stored = localStorage.getItem(LOCAL_PROJECTS_KEY);
@@ -64,6 +58,7 @@ const getLocalProjects = (): Project[] => {
   }
 };
 
+// Save projects to local storage
 const saveLocalProjects = (projects: Project[]) => {
   try {
     localStorage.setItem(LOCAL_PROJECTS_KEY, JSON.stringify(projects));
@@ -72,6 +67,7 @@ const saveLocalProjects = (projects: Project[]) => {
   }
 };
 
+// Fetch projects from Supabase or fallback to local storage
 export const fetchProjects = async (filters?: ProjectFilter) => {
   try {
     // Use Supabase
@@ -85,7 +81,7 @@ export const fetchProjects = async (filters?: ProjectFilter) => {
         query = query.eq('type', filters.type);
       }
       if (filters.usefulness && filters.usefulness !== 'All Ratings') {
-        query = query.eq('usefulness', filters.usefulness);
+        query = query.eq('usefulness', parseInt(filters.usefulness.toString(), 10));
       }
       if (filters.monetizedOnly) {
         query = query.eq('ismonetized', true);
@@ -106,7 +102,7 @@ export const fetchProjects = async (filters?: ProjectFilter) => {
     }
     
     // Transform column names to match our Project interface
-    return (data as any[]).map(mapSupabaseProject);
+    return (data || []).map(mapSupabaseProject);
     
   } catch (error) {
     console.error('Error fetching projects from Supabase:', error);
@@ -117,6 +113,7 @@ export const fetchProjects = async (filters?: ProjectFilter) => {
   }
 };
 
+// Create a new project
 export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 'lastUpdated'>) => {
   try {
     const now = new Date().toISOString();
@@ -140,6 +137,10 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
 
     if (error) {
       throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      throw new Error('No data returned from insert operation');
     }
     
     toast.success('Project created successfully');
@@ -171,9 +172,10 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
   }
 };
 
+// Update an existing project
 export const updateProject = async (id: string, project: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
   try {
-    const updates = {
+    const updates: any = {
       ...mapToSupabaseProject(project),
       lastupdated: new Date().toISOString(),
     };
@@ -192,6 +194,10 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
 
     if (error) {
       throw error;
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error('No data returned from update operation');
     }
     
     toast.success('Project updated successfully');
@@ -222,6 +228,7 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
   }
 };
 
+// Delete a project
 export const deleteProject = async (id: string) => {
   try {
     // Delete from Supabase
@@ -254,6 +261,7 @@ export const deleteProject = async (id: string) => {
   }
 };
 
+// Import projects from CSV
 export const importProjectsFromCSV = async (csvData: string) => {
   try {
     // Parse CSV into rows
@@ -281,7 +289,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
           project[header] = value ? parseInt(value, 10) : 0;
         } else {
           // Parse strings
-          project[header] = value;
+          project[header] = value || '';
         }
       });
 
@@ -289,35 +297,42 @@ export const importProjectsFromCSV = async (csvData: string) => {
       
       // Map properties to Supabase column names
       return {
-        name: project.name,
-        description: project.description,
-        type: project.type,
-        status: project.status,
-        usefulness: project.usefulness,
+        name: project.name || 'Untitled Project',
+        description: project.description || '',
+        type: project.type || 'Personal',
+        status: project.status || 'Idea',
+        usefulness: project.usefulness || 3,
         ismonetized: project.isMonetized === true,
         progress: project.progress || 0,
         tags: project.tags || [],
-        githuburl: project.githubUrl,
-        websiteurl: project.websiteUrl,
-        nextaction: project.nextAction,
+        githuburl: project.githubUrl || '',
+        websiteurl: project.websiteUrl || '',
+        nextaction: project.nextAction || '',
         lastupdated: now,
         createdat: now,
-        // Initialize activitylogs as a separate property
         activitylogs: [{ text: "Project imported from CSV", date: now }]
       };
     });
 
+    // Filter out any projects with missing required fields
+    const validProjects = projects.filter(p => p.name && p.name.trim() !== '');
+
+    if (validProjects.length === 0) {
+      toast.error('No valid projects found in CSV data');
+      return [];
+    }
+
     // Insert into Supabase
     const { data, error } = await supabase
       .from('projects')
-      .insert(projects)
+      .insert(validProjects)
       .select();
 
     if (error) {
       throw error;
     }
     
-    toast.success(`Imported ${projects.length} projects successfully`);
+    toast.success(`Imported ${validProjects.length} projects successfully`);
     return (data as any[]).map(mapSupabaseProject);
   } catch (error) {
     console.error('Error importing projects to Supabase:', error);
@@ -343,7 +358,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
           } else if (header === 'usefulness' || header === 'progress') {
             project[header] = value ? parseInt(value, 10) : 0;
           } else {
-            project[header] = value;
+            project[header] = value || '';
           }
         });
 
@@ -356,12 +371,21 @@ export const importProjectsFromCSV = async (csvData: string) => {
         return project as Project;
       });
       
+      // Filter out any projects with missing required fields
+      const validProjects = projects.filter(p => p.name && p.name.trim() !== '');
+      
+      if (validProjects.length === 0) {
+        toast.error('No valid projects found in CSV data');
+        return [];
+      }
+      
       const existingProjects = getLocalProjects();
-      const allProjects = [...existingProjects, ...projects];
+      const allProjects = [...existingProjects, ...validProjects];
       
       saveLocalProjects(allProjects);
+      toast.success(`Imported ${validProjects.length} projects successfully (stored locally)`);
       
-      return projects;
+      return validProjects;
     } catch (csvError) {
       console.error('Error parsing CSV:', csvError);
       toast.error('Failed to parse CSV file');
