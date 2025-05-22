@@ -23,8 +23,8 @@ function mapSupabaseProject(data: any): Project {
     websiteUrl: data.websiteurl || '',
     nextAction: data.nextaction || '',
     activityLogs: data.activitylogs || [],
-    lastUpdated: data.lastupdated || data.lastUpdated || new Date().toISOString(),
-    createdAt: data.createdat || data.createdAt || new Date().toISOString(),
+    lastUpdated: data.lastupdated || new Date().toISOString(),
+    createdAt: data.createdat || new Date().toISOString(),
     user_id: data.user_id || '',
   };
 }
@@ -71,7 +71,7 @@ const saveLocalProjects = (projects: Project[]) => {
 export const fetchProjects = async (filters?: ProjectFilter) => {
   try {
     // Use Supabase
-    let query = supabase.from('projects').select('*');
+    let query = supabase.from('projects_dashboard').select('*');
 
     if (filters) {
       if (filters.status && filters.status !== 'All Status') {
@@ -131,7 +131,7 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
 
     // Save to Supabase
     const { data, error } = await supabase
-      .from('projects')
+      .from('projects_dashboard')
       .insert([newProjectData])
       .select();
 
@@ -187,7 +187,7 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
 
     // Update in Supabase
     const { data, error } = await supabase
-      .from('projects')
+      .from('projects_dashboard')
       .update(updates)
       .eq('id', id)
       .select();
@@ -233,7 +233,7 @@ export const deleteProject = async (id: string) => {
   try {
     // Delete from Supabase
     const { error } = await supabase
-      .from('projects')
+      .from('projects_dashboard')
       .delete()
       .eq('id', id);
 
@@ -271,7 +271,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
     const headers = rows[0].split(',');
     
     // Parse data rows
-    const projects = rows.slice(1).map((row) => {
+    const projectsData = rows.slice(1).map((row) => {
       const values = row.split(',');
       const project: any = {};
       
@@ -315,7 +315,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
     });
 
     // Filter out any projects with missing required fields
-    const validProjects = projects.filter(p => p.name && p.name.trim() !== '');
+    const validProjects = projectsData.filter(p => p.name && p.name.trim() !== '');
 
     if (validProjects.length === 0) {
       toast.error('No valid projects found in CSV data');
@@ -324,7 +324,7 @@ export const importProjectsFromCSV = async (csvData: string) => {
 
     // Insert into Supabase
     const { data, error } = await supabase
-      .from('projects')
+      .from('projects_dashboard')
       .insert(validProjects)
       .select();
 

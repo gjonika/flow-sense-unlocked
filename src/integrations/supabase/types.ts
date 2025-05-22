@@ -477,6 +477,60 @@ export type Database = {
           },
         ]
       }
+      projects_dashboard: {
+        Row: {
+          activitylogs: Json | null
+          createdat: string | null
+          description: string | null
+          githuburl: string | null
+          id: string
+          ismonetized: boolean | null
+          lastupdated: string | null
+          name: string
+          nextaction: string | null
+          progress: number | null
+          status: string | null
+          tags: string[] | null
+          type: string | null
+          usefulness: number | null
+          websiteurl: string | null
+        }
+        Insert: {
+          activitylogs?: Json | null
+          createdat?: string | null
+          description?: string | null
+          githuburl?: string | null
+          id?: string
+          ismonetized?: boolean | null
+          lastupdated?: string | null
+          name: string
+          nextaction?: string | null
+          progress?: number | null
+          status?: string | null
+          tags?: string[] | null
+          type?: string | null
+          usefulness?: number | null
+          websiteurl?: string | null
+        }
+        Update: {
+          activitylogs?: Json | null
+          createdat?: string | null
+          description?: string | null
+          githuburl?: string | null
+          id?: string
+          ismonetized?: boolean | null
+          lastupdated?: string | null
+          name?: string
+          nextaction?: string | null
+          progress?: number | null
+          status?: string | null
+          tags?: string[] | null
+          type?: string | null
+          usefulness?: number | null
+          websiteurl?: string | null
+        }
+        Relationships: []
+      }
       readings_utilities: {
         Row: {
           cost: number
