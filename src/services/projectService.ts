@@ -72,7 +72,7 @@ const saveLocalProjects = (projects: Project[]) => {
 export const fetchProjects = async (filters?: ProjectFilter) => {
   try {
     // Use Supabase
-    let query = supabase.from('projects_dashboard').select('*');
+    let query = supabase.from('projects').select('*');
 
     if (filters) {
       if (filters.status && filters.status !== 'All Status') {
@@ -123,6 +123,7 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
       date: now
     }];
     
+    // Prepare the project data for Supabase
     const newProjectData = {
       ...mapToSupabaseProject(project),
       activitylogs: (project.activityLogs || initialActivity) as unknown as Json,
@@ -130,9 +131,9 @@ export const createProject = async (project: Omit<Project, 'id' | 'createdAt' | 
       createdat: now,
     };
 
-    // Save to Supabase - fix: send as a single object, not wrapped in an array
+    // Save to Supabase using the correct table name 'projects'
     const { data, error } = await supabase
-      .from('projects_dashboard')
+      .from('projects')
       .insert(newProjectData)
       .select();
 
@@ -186,9 +187,9 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
       updates.activitylogs = project.activityLogs as unknown as Json;
     }
 
-    // Update in Supabase
+    // Update in Supabase using the correct table name 'projects'
     const { data, error } = await supabase
-      .from('projects_dashboard')
+      .from('projects')
       .update(updates)
       .eq('id', id)
       .select();
@@ -232,9 +233,9 @@ export const updateProject = async (id: string, project: Partial<Omit<Project, '
 // Delete a project
 export const deleteProject = async (id: string) => {
   try {
-    // Delete from Supabase
+    // Delete from Supabase using the correct table name 'projects'
     const { error } = await supabase
-      .from('projects_dashboard')
+      .from('projects')
       .delete()
       .eq('id', id);
 
@@ -323,9 +324,9 @@ export const importProjectsFromCSV = async (csvData: string) => {
       return [];
     }
 
-    // Insert into Supabase - validProjects is already an array, so pass it directly
+    // Insert into Supabase using the correct table name 'projects'
     const { data, error } = await supabase
-      .from('projects_dashboard')
+      .from('projects')
       .insert(validProjects)
       .select();
 
