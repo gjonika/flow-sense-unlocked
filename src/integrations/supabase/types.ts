@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_settings: {
+        Row: {
+          api_key_gemini: string | null
+          api_key_openai: string | null
+          auto_sync_enabled: boolean | null
+          created_at: string | null
+          export_format: string | null
+          google_drive_folder_id: string | null
+          google_sheet_url: string | null
+          id: string
+          preferred_model: string | null
+          sync_interval: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          api_key_gemini?: string | null
+          api_key_openai?: string | null
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          export_format?: string | null
+          google_drive_folder_id?: string | null
+          google_sheet_url?: string | null
+          id?: string
+          preferred_model?: string | null
+          sync_interval?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          api_key_gemini?: string | null
+          api_key_openai?: string | null
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          export_format?: string | null
+          google_drive_folder_id?: string | null
+          google_sheet_url?: string | null
+          id?: string
+          preferred_model?: string | null
+          sync_interval?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       api_keys: {
         Row: {
           created_at: string
@@ -33,6 +78,42 @@ export type Database = {
           service?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      authors: {
+        Row: {
+          created_at: string
+          genre: string
+          id: string
+          inspiration: string
+          name: string
+          quote: string
+          refinement: string
+          signature: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          genre: string
+          id?: string
+          inspiration: string
+          name: string
+          quote: string
+          refinement: string
+          signature: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          genre?: string
+          id?: string
+          inspiration?: string
+          name?: string
+          quote?: string
+          refinement?: string
+          signature?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -107,6 +188,163 @@ export type Database = {
           },
         ]
       }
+      books: {
+        Row: {
+          ai_guide: string | null
+          arcs: string[] | null
+          author_id: string
+          created_at: string
+          emotion_progression: string | null
+          emotional_secrets: string | null
+          export_format: string | null
+          foreshadowing: string[] | null
+          genre: string
+          google_doc_id: string | null
+          id: string
+          logline: string | null
+          outline_generated_at: string | null
+          outline_status: string | null
+          plot_secrets: string | null
+          pov: string | null
+          structure_notes: string | null
+          subgenre: string | null
+          symbols: string[] | null
+          themes: string[] | null
+          title: string
+          tone_keywords: string[] | null
+          updated_at: string
+          word_count: number | null
+        }
+        Insert: {
+          ai_guide?: string | null
+          arcs?: string[] | null
+          author_id: string
+          created_at?: string
+          emotion_progression?: string | null
+          emotional_secrets?: string | null
+          export_format?: string | null
+          foreshadowing?: string[] | null
+          genre: string
+          google_doc_id?: string | null
+          id?: string
+          logline?: string | null
+          outline_generated_at?: string | null
+          outline_status?: string | null
+          plot_secrets?: string | null
+          pov?: string | null
+          structure_notes?: string | null
+          subgenre?: string | null
+          symbols?: string[] | null
+          themes?: string[] | null
+          title: string
+          tone_keywords?: string[] | null
+          updated_at?: string
+          word_count?: number | null
+        }
+        Update: {
+          ai_guide?: string | null
+          arcs?: string[] | null
+          author_id?: string
+          created_at?: string
+          emotion_progression?: string | null
+          emotional_secrets?: string | null
+          export_format?: string | null
+          foreshadowing?: string[] | null
+          genre?: string
+          google_doc_id?: string | null
+          id?: string
+          logline?: string | null
+          outline_generated_at?: string | null
+          outline_status?: string | null
+          plot_secrets?: string | null
+          pov?: string | null
+          structure_notes?: string | null
+          subgenre?: string | null
+          symbols?: string[] | null
+          themes?: string[] | null
+          title?: string
+          tone_keywords?: string[] | null
+          updated_at?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "books_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chapters: {
+        Row: {
+          ai_generated: boolean | null
+          ai_model_used: string | null
+          ai_prompt: string | null
+          book_id: string
+          chapter_number: number
+          content: string | null
+          created_at: string
+          export_timestamp: string | null
+          generation_context: Json | null
+          google_doc_id: string | null
+          id: string
+          last_modified: string
+          notes: string | null
+          phase: string | null
+          status: string
+          title: string
+          word_count: number | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          ai_model_used?: string | null
+          ai_prompt?: string | null
+          book_id: string
+          chapter_number: number
+          content?: string | null
+          created_at?: string
+          export_timestamp?: string | null
+          generation_context?: Json | null
+          google_doc_id?: string | null
+          id?: string
+          last_modified?: string
+          notes?: string | null
+          phase?: string | null
+          status?: string
+          title: string
+          word_count?: number | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          ai_model_used?: string | null
+          ai_prompt?: string | null
+          book_id?: string
+          chapter_number?: number
+          content?: string | null
+          created_at?: string
+          export_timestamp?: string | null
+          generation_context?: Json | null
+          google_doc_id?: string | null
+          id?: string
+          last_modified?: string
+          notes?: string | null
+          phase?: string | null
+          status?: string
+          title?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chapters_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           created_at: string
@@ -127,6 +365,69 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      generation_logs: {
+        Row: {
+          book_id: string | null
+          chapter_id: string | null
+          created_at: string | null
+          error_message: string | null
+          generation_time_ms: number | null
+          generation_type: string
+          id: string
+          model_used: string
+          prompt_used: string | null
+          response_text: string | null
+          success: boolean | null
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          book_id?: string | null
+          chapter_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          generation_time_ms?: number | null
+          generation_type: string
+          id?: string
+          model_used: string
+          prompt_used?: string | null
+          response_text?: string | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          book_id?: string | null
+          chapter_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          generation_time_ms?: number | null
+          generation_type?: string
+          id?: string
+          model_used?: string
+          prompt_used?: string | null
+          response_text?: string | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generation_logs_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_logs_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       keywords: {
         Row: {
@@ -307,12 +608,14 @@ export type Database = {
       }
       projects: {
         Row: {
+          category: string | null
           createdat: string
           description: string | null
           githuburl: string | null
           id: string
           ismonetized: boolean
           lastupdated: string
+          milestones: Json | null
           name: string
           nextaction: string | null
           progress: number
@@ -324,12 +627,14 @@ export type Database = {
           websiteurl: string | null
         }
         Insert: {
+          category?: string | null
           createdat?: string
           description?: string | null
           githuburl?: string | null
           id?: string
           ismonetized?: boolean
           lastupdated?: string
+          milestones?: Json | null
           name: string
           nextaction?: string | null
           progress?: number
@@ -341,12 +646,14 @@ export type Database = {
           websiteurl?: string | null
         }
         Update: {
+          category?: string | null
           createdat?: string
           description?: string | null
           githuburl?: string | null
           id?: string
           ismonetized?: boolean
           lastupdated?: string
+          milestones?: Json | null
           name?: string
           nextaction?: string | null
           progress?: number
@@ -358,6 +665,47 @@ export type Database = {
           websiteurl?: string | null
         }
         Relationships: []
+      }
+      readings: {
+        Row: {
+          amount_paid: number
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          reading_value: number | null
+          supplier_id: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_paid: number
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          reading_value?: number | null
+          supplier_id: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          reading_value?: number | null
+          supplier_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "readings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       repurpose_sessions: {
         Row: {
@@ -444,6 +792,248 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppliers: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          is_metered: boolean | null
+          login_url: string | null
+          name: string
+          payment_type: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_metered?: boolean | null
+          login_url?: string | null
+          name: string
+          payment_type?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          is_metered?: boolean | null
+          login_url?: string | null
+          name?: string
+          payment_type?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      survey_media: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          id: string
+          last_synced_at: string | null
+          local_file_data: string | null
+          needs_sync: boolean | null
+          storage_path: string
+          survey_id: string
+          thumbnail_path: string | null
+          zone_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          last_synced_at?: string | null
+          local_file_data?: string | null
+          needs_sync?: boolean | null
+          storage_path: string
+          survey_id: string
+          thumbnail_path?: string | null
+          zone_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          last_synced_at?: string | null
+          local_file_data?: string | null
+          needs_sync?: boolean | null
+          storage_path?: string
+          survey_id?: string
+          thumbnail_path?: string | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_media_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_media_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "survey_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_notes: {
+        Row: {
+          created_at: string
+          id: string
+          last_synced_at: string | null
+          needs_sync: boolean | null
+          note_content: string
+          survey_id: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          needs_sync?: boolean | null
+          note_content: string
+          survey_id: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          needs_sync?: boolean | null
+          note_content?: string
+          survey_id?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_notes_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_notes_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "survey_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_zones: {
+        Row: {
+          created_at: string
+          id: string
+          survey_id: string
+          zone_name: string
+          zone_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          survey_id: string
+          zone_name: string
+          zone_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          survey_id?: string
+          zone_name?: string
+          zone_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_zones_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          client_contacts: Json | null
+          client_country: string
+          client_name: string
+          created_at: string
+          custom_fields: Json | null
+          duration: string
+          flight_details: Json | null
+          hotel_details: Json | null
+          id: string
+          last_synced_at: string | null
+          needs_sync: boolean | null
+          project_scope: string
+          ship_name: string
+          status: string
+          survey_date: string
+          survey_location: string
+          tools: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_contacts?: Json | null
+          client_country: string
+          client_name: string
+          created_at?: string
+          custom_fields?: Json | null
+          duration: string
+          flight_details?: Json | null
+          hotel_details?: Json | null
+          id?: string
+          last_synced_at?: string | null
+          needs_sync?: boolean | null
+          project_scope: string
+          ship_name: string
+          status?: string
+          survey_date: string
+          survey_location: string
+          tools?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_contacts?: Json | null
+          client_country?: string
+          client_name?: string
+          created_at?: string
+          custom_fields?: Json | null
+          duration?: string
+          flight_details?: Json | null
+          hotel_details?: Json | null
+          id?: string
+          last_synced_at?: string | null
+          needs_sync?: boolean | null
+          project_scope?: string
+          ship_name?: string
+          status?: string
+          survey_date?: string
+          survey_location?: string
+          tools?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       upload_logs: {
         Row: {
@@ -558,6 +1148,118 @@ export type Database = {
           full_name?: string | null
           id?: string
           plan_id?: string
+        }
+        Relationships: []
+      }
+      utility_readings: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          meter_reading: number | null
+          notes: string | null
+          reading_date: string
+          supplier_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          meter_reading?: number | null
+          notes?: string | null
+          reading_date: string
+          supplier_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          meter_reading?: number | null
+          notes?: string | null
+          reading_date?: string
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "utility_readings_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "utility_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      utility_suppliers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          payment_method: string | null
+          subscription_based: boolean | null
+          type_id: string | null
+          updated_at: string
+          user_id: string | null
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          payment_method?: string | null
+          subscription_based?: boolean | null
+          type_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          payment_method?: string | null
+          subscription_based?: boolean | null
+          type_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "utility_suppliers_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "utility_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      utility_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          requires_meter_reading: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          requires_meter_reading?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          requires_meter_reading?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
