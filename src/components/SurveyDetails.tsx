@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Ship, Calendar, MapPin, Users, Plane, Hotel } from "lucide-react";
+import { ArrowLeft, Ship, Calendar, MapPin, Users, Edit } from "lucide-react";
 import { Survey } from "@/types/survey";
 import { useSurveyZones } from "@/hooks/useSurveyZones";
 import ZoneNotesSection from "./ZoneNotesSection";
@@ -13,25 +13,29 @@ import TravelSection from "./TravelSection";
 
 interface SurveyDetailsProps {
   survey: Survey;
-  onUpdate: (survey: Survey) => void;
+  onUpdate: (id: string, updates: Partial<Survey>) => Promise<Survey | undefined>;
   onBack: () => void;
 }
 
 const SurveyDetails = ({ survey, onUpdate, onBack }: SurveyDetailsProps) => {
   const { zones, notes, loading, createZone, createNote } = useSurveyZones(survey.id);
 
-  const updateStatus = (newStatus: Survey['status']) => {
-    onUpdate({ ...survey, status: newStatus });
+  const updateStatus = async (newStatus: Survey['status']) => {
+    await onUpdate(survey.id, { status: newStatus });
+  };
+
+  const handleSurveyUpdate = async (updatedSurvey: Survey) => {
+    await onUpdate(updatedSurvey.id, updatedSurvey);
   };
 
   const getStatusColor = (status: Survey['status']) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-300';
       case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -44,7 +48,7 @@ const SurveyDetails = ({ survey, onUpdate, onBack }: SurveyDetailsProps) => {
         <div className="flex items-center">
           <Button variant="ghost" onClick={onBack} className="mr-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Surveys
+            Back to Dashboard
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center">
@@ -186,7 +190,7 @@ const SurveyDetails = ({ survey, onUpdate, onBack }: SurveyDetailsProps) => {
         <TabsContent value="travel">
           <TravelSection
             survey={survey}
-            onUpdate={onUpdate}
+            onUpdate={handleSurveyUpdate}
           />
         </TabsContent>
       </Tabs>

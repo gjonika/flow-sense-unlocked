@@ -5,17 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Ship, Calendar, MapPin, Users, Plus, Search, Filter, Wifi, WifiOff } from "lucide-react";
+import { Ship, Calendar, MapPin, Users, Plus, Search, Filter, Wifi, WifiOff, Menu, X } from "lucide-react";
 import { Survey } from "@/types/survey";
 import { useSurveys } from "@/hooks/useSurveys";
 import SyncStatusBadge from "@/components/SyncStatusBadge";
 import SurveyForm from "@/components/SurveyForm";
 import SurveyDetails from "@/components/SurveyDetails";
+import EmptyState from "@/components/EmptyState";
+import { DashboardLoadingState } from "@/components/LoadingState";
 
 type ViewMode = 'dashboard' | 'create' | 'edit' | 'view';
 
 const Dashboard = () => {
-  const { surveys, loading, createSurvey, isOnline, syncPendingSurveys } = useSurveys();
+  const { surveys, loading, createSurvey, updateSurvey, isOnline, syncPendingSurveys } = useSurveys();
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleUpdateSurvey = async (surveyData: Omit<Survey, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'last_synced_at' | 'needs_sync'>) => {
+    if (!selectedSurvey) return;
+    
+    try {
+      await updateSurvey(selectedSurvey.id, surveyData);
+      setViewMode('dashboard');
+      setSelectedSurvey(null);
+    } catch (error) {
+      console.error('Failed to update survey:', error);
+    }
+  };
+
   const handleEditSurvey = (survey: Survey) => {
     setSelectedSurvey(survey);
     setViewMode('edit');
@@ -90,7 +104,7 @@ const Dashboard = () => {
     return (
       <SurveyForm
         survey={selectedSurvey}
-        onSubmit={handleCreateSurvey}
+        onSubmit={handleUpdateSurvey}
         onCancel={() => setViewMode('dashboard')}
         isOnline={isOnline}
       />
@@ -101,8 +115,8 @@ const Dashboard = () => {
     return (
       <SurveyDetails
         survey={selectedSurvey}
+        onUpdate={(updatedSurvey) => updateSurvey(updatedSurvey.id, updatedSurvey)}
         onBack={() => setViewMode('dashboard')}
-        onEdit={() => setViewMode('edit')}
       />
     );
   }
@@ -110,20 +124,22 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-80'}`}>
+      <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-80'} flex-shrink-0`}>
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className={`${sidebarCollapsed ? 'hidden' : 'block'}`}>
-              <h1 className="text-xl font-bold text-gray-900">Survey Dashboard</h1>
-              <p className="text-sm text-gray-600 mt-1">Ship Interior Inspections</p>
-            </div>
+            {!sidebarCollapsed && (
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Survey Dashboard</h1>
+                <p className="text-sm text-gray-600 mt-1">Ship Interior Inspections</p>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="p-2"
             >
-              <Filter className="h-4 w-4" />
+              {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -205,6 +221,10 @@ const Dashboard = () => {
                   <span className="text-blue-700">In Progress:</span>
                   <span className="font-medium">{surveys.filter(s => s.status === 'in-progress').length}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-700">Pending Sync:</span>
+                  <span className="font-medium">{surveys.filter(s => s.needs_sync).length}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -212,7 +232,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -222,7 +242,7 @@ const Dashboard = () => {
             </div>
             <Button onClick={() => setViewMode('create')} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
-              New Survey
+              New Survey Project
             </Button>
           </div>
         </div>
@@ -230,26 +250,18 @@ const Dashboard = () => {
         {/* Content */}
         <div className="flex-1 p-6">
           {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-gray-500">Loading surveys...</div>
-            </div>
+            <DashboardLoadingState />
           ) : filteredSurveys.length === 0 ? (
-            <div className="text-center py-12">
-              <Ship className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No surveys found</h3>
-              <p className="text-gray-600 mb-4">
-                {surveys.length === 0 
-                  ? "Get started by creating your first survey project."
-                  : "Try adjusting your search or filter criteria."
-                }
-              </p>
-              {surveys.length === 0 && (
-                <Button onClick={() => setViewMode('create')} className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Survey
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              title={surveys.length === 0 ? "No surveys yet" : "No surveys found"}
+              description={
+                surveys.length === 0 
+                  ? "Get started by creating your first survey project to track ship inspections and manage project details."
+                  : "Try adjusting your search or filter criteria to find the surveys you're looking for."
+              }
+              actionLabel={surveys.length === 0 ? "Create First Survey" : undefined}
+              onAction={surveys.length === 0 ? () => setViewMode('create') : undefined}
+            />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredSurveys.map((survey) => (
@@ -303,7 +315,7 @@ const Dashboard = () => {
                           onClick={() => handleViewSurvey(survey)}
                           className="flex-1"
                         >
-                          View
+                          View Details
                         </Button>
                         <Button 
                           size="sm"
@@ -317,6 +329,9 @@ const Dashboard = () => {
                     
                     <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
                       Created: {new Date(survey.created_at).toLocaleDateString()}
+                      {survey.needs_sync && (
+                        <span className="ml-2 text-yellow-600">• Pending sync</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

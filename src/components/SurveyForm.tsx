@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Survey, ClientContact } from "@/types/survey";
 import ClientContactsForm from "./ClientContactsForm";
 import ToolsForm from "./ToolsForm";
 import CustomFieldsForm from "./CustomFieldsForm";
+import { ContactValidationModal, validateContacts } from "./SurveyFormValidation";
 
 interface SurveyFormProps {
   survey?: Survey;
@@ -19,6 +21,8 @@ interface SurveyFormProps {
 
 const SurveyForm = ({ survey, onSubmit, onCancel, isOnline = true }: SurveyFormProps) => {
   const [saving, setSaving] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     client_name: "",
     client_country: "",
@@ -65,7 +69,22 @@ const SurveyForm = ({ survey, onSubmit, onCancel, isOnline = true }: SurveyFormP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate contacts
+    const contactIssues = validateContacts(formData.client_contacts);
+    
+    if (contactIssues.length > 0) {
+      setValidationIssues(contactIssues);
+      setShowValidationModal(true);
+      return;
+    }
+    
+    await proceedWithSubmit();
+  };
+
+  const proceedWithSubmit = async () => {
     setSaving(true);
+    setShowValidationModal(false);
     
     try {
       await onSubmit(formData);
@@ -82,7 +101,7 @@ const SurveyForm = ({ survey, onSubmit, onCancel, isOnline = true }: SurveyFormP
         <div className="flex items-center">
           <Button variant="ghost" onClick={onCancel} className="mr-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Back to Dashboard
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">
             {survey ? 'Edit Survey Project' : 'New Survey Project'}
@@ -221,6 +240,13 @@ const SurveyForm = ({ survey, onSubmit, onCancel, isOnline = true }: SurveyFormP
           </Button>
         </div>
       </form>
+
+      <ContactValidationModal
+        isOpen={showValidationModal}
+        onConfirm={proceedWithSubmit}
+        onCancel={() => setShowValidationModal(false)}
+        missingContacts={validationIssues}
+      />
     </div>
   );
 };
