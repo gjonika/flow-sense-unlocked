@@ -114,8 +114,8 @@ const Dashboard = () => {
     return (
       <SurveyDetails
         survey={selectedSurvey}
+        onUpdate={updateSurvey}
         onBack={() => setViewMode('dashboard')}
-        onEdit={() => setViewMode('edit')}
       />
     );
   }

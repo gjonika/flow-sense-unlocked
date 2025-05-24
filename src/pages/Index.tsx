@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 type ViewMode = 'list' | 'create' | 'edit' | 'view';
 
 const Index = () => {
-  const { surveys, createSurvey, isOnline } = useSurveys();
+  const { surveys, createSurvey, updateSurvey, isOnline } = useSurveys();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
 
@@ -54,6 +54,7 @@ const Index = () => {
     return (
       <SurveyDetails
         survey={selectedSurvey}
+        onUpdate={updateSurvey}
         onBack={() => setViewMode('list')}
       />
     );
