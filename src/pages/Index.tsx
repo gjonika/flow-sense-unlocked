@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Ship, Plus, List } from "lucide-react";
@@ -56,7 +55,6 @@ const Index = () => {
       <SurveyDetails
         survey={selectedSurvey}
         onBack={() => setViewMode('list')}
-        onEdit={() => setViewMode('edit')}
       />
     );
   }

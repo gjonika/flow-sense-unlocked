@@ -43,7 +43,7 @@ const SurveyForm = ({ survey, onSubmit, onCancel, isOnline = true }: SurveyFormP
     custom_fields: {} as { [key: string]: string },
     flight_details: {},
     hotel_details: {},
-    status: 'draft' as const,
+    status: 'draft' as Survey['status'],
   });
 
   // Pre-fill form if editing existing survey
