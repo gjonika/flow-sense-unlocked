@@ -30,7 +30,7 @@ const AccessibleModal: React.FC<AccessibleModalProps> = ({
   size = 'md'
 }) => {
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const firstFocusableRef = useRef<HTMLElement | null>(null);
+  const firstFocusableRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
