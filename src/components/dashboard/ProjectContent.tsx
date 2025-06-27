@@ -9,7 +9,8 @@ import { Project, ProjectGroupBy } from '@/lib/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { PlusIcon, FolderOpenIcon } from 'lucide-react';
+import { Icon } from '@/components/ui/Icon';
+import { Plus, FolderOpen, FileText } from 'lucide-react';
 
 interface ProjectContentProps {
   loading: boolean;
@@ -34,18 +35,21 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className="space-y-6 animate-smooth-fade-in">
+      <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mx-auto mb-4" />
-            <p className="text-body-sm text-muted-foreground">Loading your projects...</p>
+            <p className="text-body-sm text-muted-foreground">Loading your surveys...</p>
           </div>
         </div>
         
         {/* Skeleton loading cards */}
-        <div className="responsive-grid">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-64 rounded-xl animate-skeleton-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div 
+              key={i} 
+              className="h-64 bg-gray-200 rounded-xl animate-skeleton-pulse" 
+            />
           ))}
         </div>
       </div>
@@ -54,12 +58,12 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
 
   if (projects.length === 0) {
     return (
-      <div className="animate-smooth-fade-in">
+      <div className="animate-fade-in">
         <EmptyState
-          icon={FolderOpenIcon}
-          title="No projects found"
-          description="Start building something amazing! Create your first project to begin tracking your progress and achievements."
-          actionLabel="Add Your First Project"
+          icon={FileText}
+          title="No Surveys Found"
+          description="Start your first cruise ship interior assessment! Create a survey to begin tracking compliance and planning refits."
+          actionLabel="Create First Survey"
           onAction={handleAddProject}
           className="py-16"
         />
@@ -69,7 +73,7 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
 
   // Render different views based on the selected view mode
   return (
-    <div className="transition-all duration-300 animate-smooth-fade-in">
+    <div className="transition-all duration-300 animate-fade-in">
       {viewMode === 'accordion' ? (
         <ProjectAccordion 
           projects={projects}
@@ -78,7 +82,7 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
           groupBy={groupBy}
         />
       ) : viewMode === 'cards' ? (
-        <div className="responsive-grid">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
@@ -89,7 +93,7 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
           ))}
         </div>
       ) : viewMode === 'timeline' ? (
-        <div className="mt-6 surface-subtle backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-border/30 overflow-x-auto">
+        <div className="mt-6 bg-bg-light backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-light/30 overflow-x-auto">
           <ScrollArea className="w-full" orientation="horizontal">
             <div className="min-w-[800px]">
               <ProjectTimeline 
@@ -100,7 +104,7 @@ const ProjectContent: React.FC<ProjectContentProps> = ({
           </ScrollArea>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl surface-subtle backdrop-blur-sm border border-border/30">
+        <div className="overflow-x-auto rounded-xl bg-bg-light backdrop-blur-sm border border-gray-light/30">
           <div className="min-w-[800px]">
             <ProjectTable
               projects={projects}

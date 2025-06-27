@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/Icon';
 import { 
-  PlusIcon, 
-  BarChart3Icon, 
-  BrainIcon, 
-  StarIcon, 
-  UploadIcon,
+  Plus, 
+  BarChart3, 
+  Brain, 
+  Star, 
+  Upload,
   CalendarDays
 } from 'lucide-react';
 import { Project } from '@/lib/supabase';
@@ -61,9 +62,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           onClick={() => navigate('/tasks')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 transition-all duration-300 hover:scale-[1.02]"
         >
-          <CalendarDays className="h-4 w-4" />
+          <Icon icon={CalendarDays} size={16} />
           <span className="hidden sm:inline">Tasks & Deadlines</span>
           <span className="sm:hidden">Tasks</span>
         </Button>

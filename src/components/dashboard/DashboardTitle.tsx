@@ -1,21 +1,15 @@
 
 import React from 'react';
-import { ClipboardCheckIcon } from 'lucide-react';
 
 const DashboardTitle: React.FC = () => {
   return (
-    <div className="flex items-center space-x-4">
-      <div className="icon-contextual">
-        <ClipboardCheckIcon className="h-8 w-8 text-primary" />
-      </div>
-      <div>
-        <h1 className="text-primary-title text-foreground">
-          Ivory Olive
-        </h1>
-        <p className="text-body-sm text-muted-foreground mt-1">
-          Track and manage your side projects with precision
-        </p>
-      </div>
+    <div className="animate-fade-in">
+      <h1 className="text-page-title text-gray-text mb-2">
+        Survey Management Dashboard
+      </h1>
+      <p className="text-body-sm text-muted-foreground">
+        Manage cruise ship interior assessments and compliance surveys
+      </p>
     </div>
   );
 };
