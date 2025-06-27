@@ -9,7 +9,7 @@ import {
   FormMessage,
   FormDescription
 } from '@/components/ui/form';
-import TagsInput from '@/components/project/TagsInput';
+import EnhancedTagsInput from '@/components/project/EnhancedTagsInput';
 import { ProjectFormValues } from '@/components/ProjectForm';
 import FormFieldIcon from '@/components/ui/form-field-icon';
 
@@ -28,17 +28,18 @@ const TagsSection: React.FC = () => {
           </FormLabel>
           <FormControl>
             <div className="group">
-              <TagsInput
+              <EnhancedTagsInput
                 id="tags"
                 value={field.value}
                 onChange={field.onChange}
                 className="transition-all duration-200 focus-within:ring-2 focus-within:ring-primary/20"
+                maxTags={8}
               />
             </div>
           </FormControl>
           <FormDescription className="flex items-center gap-2 text-xs">
             <FormFieldIcon type="tag" className="h-3 w-3" />
-            Press Enter or comma to add a tag. Click the × to remove.
+            Add descriptive tags to organize and find your projects easily. Press Enter, comma, or select from suggestions.
           </FormDescription>
           <FormMessage />
         </FormItem>

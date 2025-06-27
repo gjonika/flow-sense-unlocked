@@ -56,14 +56,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-smooth-fade-in">
       <DashboardTitle />
       
-      <div className="flex flex-wrap items-center gap-2">
+      <nav className="flex flex-wrap items-center gap-2" aria-label="Main navigation">
         <Button
           onClick={() => navigate('/tasks')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover-lift transition-all duration-200"
+          aria-label="Navigate to tasks and deadlines page"
         >
-          <CalendarDays className="h-4 w-4" />
+          <CalendarDays className="h-4 w-4" aria-hidden="true" />
           <span className="hidden sm:inline">Tasks & Deadlines</span>
           <span className="sm:hidden">Tasks</span>
         </Button>
@@ -97,7 +98,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           handleExportCSV={handleExportCSV}
           handleExportJSON={handleExportJSON}
         />
-      </div>
+      </nav>
     </div>
   );
 };
