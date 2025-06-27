@@ -4,12 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, Target } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, Target, BarChart3, Grid3X3 } from 'lucide-react';
 import { useProjects } from '@/contexts/ProjectContext';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { TaskWithProject } from '@/hooks/useTaskManagement';
 import DeadlineEventModal from './DeadlineEventModal';
 import CalendarEventsList from './CalendarEventsList';
+import MonthlyCalendarView from './MonthlyCalendarView';
+import UpcomingTasksTimeline from './UpcomingTasksTimeline';
 
 interface CalendarEvent {
   id: string;
@@ -126,90 +129,119 @@ const DeadlinesCalendarTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />
-            Deadlines Calendar
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            View task deadlines and milestone due dates across all projects
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">
-                  {format(currentMonth, 'MMMM yyyy')}
-                </h3>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentMonth(new Date())}
-                  >
-                    Today
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+      {/* Timeline Overview */}
+      <UpcomingTasksTimeline events={calendarEvents} />
+
+      {/* Calendar Views */}
+      <Tabs defaultValue="detailed" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="detailed" className="flex items-center gap-2">
+            <Grid3X3 className="h-4 w-4" />
+            Detailed View
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Monthly Overview
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="detailed" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Deadlines Calendar
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                View task deadlines and milestone due dates across all projects
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Calendar */}
+                <div className="lg:col-span-2">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentMonth(new Date())}
+                      >
+                        Today
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    month={currentMonth}
+                    onMonthChange={setCurrentMonth}
+                    className="rounded-md border"
+                    modifiers={{
+                      eventDay: eventDates
+                    }}
+                    modifiersStyles={{
+                      eventDay: {
+                        backgroundColor: 'hsl(var(--primary))',
+                        color: 'hsl(var(--primary-foreground))',
+                        borderRadius: '50%'
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Events for selected date */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      {format(selectedDate, 'MMMM d, yyyy')}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedDateEvents.length} {selectedDateEvents.length === 1 ? 'deadline' : 'deadlines'}
+                    </p>
+                  </div>
+
+                  <CalendarEventsList
+                    events={selectedDateEvents}
+                    onEventClick={handleEventClick}
+                    getEventTypeIcon={getEventTypeIcon}
+                    getEventTypeBadge={getEventTypeBadge}
+                  />
                 </div>
               </div>
-              
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                month={currentMonth}
-                onMonthChange={setCurrentMonth}
-                className="rounded-md border"
-                modifiers={{
-                  eventDay: eventDates
-                }}
-                modifiersStyles={{
-                  eventDay: {
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))',
-                    borderRadius: '50%'
-                  }
-                }}
-              />
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            {/* Events for selected date */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  {format(selectedDate, 'MMMM d, yyyy')}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {selectedDateEvents.length} {selectedDateEvents.length === 1 ? 'deadline' : 'deadlines'}
-                </p>
-              </div>
-
-              <CalendarEventsList
-                events={selectedDateEvents}
-                onEventClick={handleEventClick}
-                getEventTypeIcon={getEventTypeIcon}
-                getEventTypeBadge={getEventTypeBadge}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <TabsContent value="monthly" className="space-y-6 mt-6">
+          <MonthlyCalendarView
+            events={calendarEvents}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+            onDateSelect={handleDateSelect}
+            selectedDate={selectedDate}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Event Details Modal */}
       <DeadlineEventModal
