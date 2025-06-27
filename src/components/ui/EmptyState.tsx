@@ -1,43 +1,38 @@
 
 import React from 'react';
-import { LucideIcon, FolderOpen } from 'lucide-react';
-import { Button } from './button';
-import { Icon } from './Icon';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { LucideIcon } from 'lucide-react';
 
 interface EmptyStateProps {
+  icon?: LucideIcon;
   title: string;
   description: string;
-  icon?: LucideIcon;
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({
-  title,
-  description,
-  icon = FolderOpen,
-  actionLabel,
+const EmptyState: React.FC<EmptyStateProps> = ({ 
+  icon: Icon, 
+  title, 
+  description, 
+  actionLabel, 
   onAction,
-  className
+  className = ""
 }) => {
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center p-8 text-center bg-bg-lighter rounded-lg border border-gray-light/50 animate-fade-in",
-      className
-    )}>
-      <Icon 
-        icon={icon} 
-        size={48} 
-        className="mb-4 text-gray-400" 
-      />
-      <h3 className="text-section-title text-gray-text mb-2">{title}</h3>
-      <p className="text-body-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
+    <div className={`empty-state animate-smooth-fade-in ${className}`}>
+      {Icon && (
+        <div className="empty-state-icon">
+          <Icon className="h-12 w-12" />
+        </div>
+      )}
+      <h3 className="empty-state-title">{title}</h3>
+      <p className="empty-state-description">{description}</p>
       {actionLabel && onAction && (
         <Button 
-          onClick={onAction}
-          className="bg-brand-primary hover:bg-green-700 transition-colors duration-300"
+          onClick={onAction} 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground hover-lift"
         >
           {actionLabel}
         </Button>

@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/Icon';
 import { 
-  Plus, 
-  BarChart3, 
-  Brain, 
-  Star, 
-  Upload,
-  Download
+  PlusIcon, 
+  FileTextIcon, 
+  BrainIcon, 
+  ListTodoIcon, 
+  DownloadIcon,
+  LineChart
 } from 'lucide-react';
+import { Project } from '@/lib/supabase';
 
 interface DesktopControlsProps {
   handleAddProject: () => void;
@@ -37,71 +37,94 @@ const DesktopControls: React.FC<DesktopControlsProps> = ({
   handleExportJSON,
 }) => {
   return (
-    <div className="hidden lg:flex items-center gap-2">
-      <Button
+    <div className="hidden lg:flex flex-wrap gap-3 items-center">
+      <Button 
         onClick={handleAddProject}
-        className="bg-brand-primary hover:bg-green-700 transition-all duration-300 hover:scale-[1.02]"
-        size="sm"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground touch-target hover-lift transition-all duration-200"
+        size="default"
       >
-        <Icon icon={Plus} size={16} />
-        Add Survey
+        <PlusIcon className="h-4 w-4 mr-2" />
+        <span>Add Project</span>
       </Button>
       
-      <Button
-        onClick={toggleAnalytics}
-        variant={showAnalytics ? "default" : "outline"}
-        size="sm"
-        className={`transition-all duration-300 hover:scale-[1.02] ${
-          showAnalytics ? 'bg-brand-secondary hover:bg-cyan-700' : ''
-        }`}
-      >
-        <Icon icon={BarChart3} size={16} />
-        Analytics
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant={showAnalytics ? "default" : "outline"}
+          className={`touch-target hover-scale transition-all duration-200 ${
+            showAnalytics 
+              ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+              : 'hover:bg-accent/10 hover:text-accent border-accent/20'
+          }`}
+          onClick={toggleAnalytics}
+        >
+          <LineChart className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">
+            {showAnalytics ? 'Hide' : 'Show'} Insights
+          </span>
+          <span className="sm:hidden">Insights</span>
+        </Button>
+        
+        <Button
+          variant="outline"
+          className={`touch-target hover-scale transition-all duration-200 hover:bg-accent/10 hover:text-accent border-accent/20 ${
+            showPriorities ? 'bg-accent/10 text-accent' : ''
+          }`}
+          onClick={togglePriorities}
+        >
+          <ListTodoIcon className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">
+            {showPriorities ? 'Hide' : 'Show'} Priorities
+          </span>
+          <span className="sm:hidden">Priorities</span>
+        </Button>
+        
+        <Button
+          variant="outline"
+          className={`touch-target hover-scale transition-all duration-200 hover:bg-accent/10 hover:text-accent border-accent/20 ${
+            showAISupport ? 'bg-accent/10 text-accent' : ''
+          }`}
+          onClick={toggleAISupport}
+        >
+          <BrainIcon className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">
+            {showAISupport ? 'Hide' : 'Show'} AI Support
+          </span>
+          <span className="sm:hidden">AI</span>
+        </Button>
+      </div>
       
-      <Button
-        onClick={togglePriorities}
-        variant={showPriorities ? "default" : "outline"}
-        size="sm"
-        className={`transition-all duration-300 hover:scale-[1.02] ${
-          showPriorities ? 'bg-brand-secondary hover:bg-cyan-700' : ''
-        }`}
-      >
-        <Icon icon={Star} size={16} />
-        Priorities
-      </Button>
-      
-      <Button
-        onClick={toggleAISupport}
-        variant={showAISupport ? "default" : "outline"}
-        size="sm"
-        className={`transition-all duration-300 hover:scale-[1.02] ${
-          showAISupport ? 'bg-brand-secondary hover:bg-cyan-700' : ''
-        }`}
-      >
-        <Icon icon={Brain} size={16} />
-        AI Support
-      </Button>
-      
-      <Button
-        onClick={openImportDialog}
-        variant="outline"
-        size="sm"
-        className="transition-all duration-300 hover:scale-[1.02]"
-      >
-        <Icon icon={Upload} size={16} />
-        Import
-      </Button>
-      
-      <Button
-        onClick={handleExportCSV}
-        variant="outline"
-        size="sm"
-        className="transition-all duration-300 hover:scale-[1.02]"
-      >
-        <Icon icon={Download} size={16} />
-        Export
-      </Button>
+      <div className="flex items-center gap-2 border-l pl-3 border-border/50">
+        <Button 
+          variant="outline"
+          className="touch-target hover-scale transition-all duration-200 hover:bg-muted/50"
+          onClick={openImportDialog}
+        >
+          <FileTextIcon className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Import CSV</span>
+          <span className="sm:hidden">Import</span>
+        </Button>
+
+        <div className="flex gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="touch-target hover-scale transition-all duration-200 hover:bg-muted/50"
+            onClick={handleExportCSV}
+          >
+            <DownloadIcon className="h-3.5 w-3.5 mr-1" />
+            <span>CSV</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="touch-target hover-scale transition-all duration-200 hover:bg-muted/50"
+            onClick={handleExportJSON}
+          >
+            <DownloadIcon className="h-3.5 w-3.5 mr-1" />
+            <span>JSON</span>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
